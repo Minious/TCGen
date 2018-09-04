@@ -1,26 +1,89 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>Page Title</title>
-</head>
-<body>
+    <head>
+        <title>TCGen</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF8">
+        <style>
+            td {padding: 3px;}
+            body {padding: 50px;}
+        </style>
+    </head>
+    <body>
 
-<input type="checkbox" id="whiteText" /></br>
-<input type="text" id="name" /></br>
-<input type="text" id="surname" /></br>
-<input type="number" id="rarete" min="1" max="5" value="1" /></br>
-<input type="file" id="image" name="image" accept=".jpg, .jpeg, .png"><br>
-<input type="file" id="fond" name="fond" accept=".jpg, .jpeg, .png"><br>
-<input type="text" id="labelComp0" /><input type="number" id="valeurComp0" min="0" max="9" value="0" /></br>
-<input type="text" id="labelComp1" /><input type="number" id="valeurComp1" min="0" max="9" value="0" /></br>
-<input type="text" id="labelComp2" /><input type="number" id="valeurComp2" min="0" max="9" value="0" /></br>
-<input type="text" id="labelComp3" /><input type="number" id="valeurComp3" min="0" max="9" value="0" /></br>
-<input type="text" id="labelComp4" /><input type="number" id="valeurComp4" min="0" max="9" value="0" /></br>
-<input type="text" id="labelComp5" /><input type="number" id="valeurComp5" min="0" max="9" value="0" /></br>
-<input type="text" id="citation" /></br>
+        <table style="margin-right: 40px; float: left;">
+            <tr>
+                <td><label for="name">Nom:</label></td>
+                <td><input type="text" id="name" /></td>
+            </tr>
+            <tr>
+                <td><label for="surname">Surnom:</label></td>
+                <td><input type="text" id="surname" /></td>
+            </tr>
+            <tr>
+                <td><label for="rarete">Rareté:</label></td>
+                <td><input type="number" id="rarete" min="1" max="5" value="1" /></td>
+            </tr>
+            <tr>
+                <td><label for="image">Image:</label></td>
+                <td><input type="file" id="image" name="image" accept=".jpg, .jpeg, .png"></td>
+            </tr>
+            <tr>
+                <td><label for="fond">Fond:</label></td>
+                <td><input type="file" id="fond" name="fond" accept=".jpg, .jpeg, .png"></td>
+            </tr>
+            <tr>
+                <td><label for="logo">Logo:</label></td>
+                <td><input type="file" id="logo" name="logo" accept=".jpg, .jpeg, .png"></td>
+            </tr>
+            <tr>
+                <td><label for="labelComp0">Label compétence 1:</label></td>
+                <td><input type="text" id="labelComp0" /></td>
+                <td><label for="valeurComp0">Valeur compétence 1:</label></td>
+                <td><input type="number" id="valeurComp0" min="0" max="9" value="0" /></td>
+            </tr>
+            <tr>
+                <td><label for="labelComp1">Label compétence 2:</label></td>
+                <td><input type="text" id="labelComp1" /></td>
+                <td><label for="valeurComp1">Valeur compétence 2:</label></td>
+                <td><input type="number" id="valeurComp1" min="0" max="9" value="0" /></td>
+            </tr>
+            <tr>
+                <td><label for="labelComp2">Label compétence 3:</label></td>
+                <td><input type="text" id="labelComp2" /></td>
+                <td><label for="valeurComp2">Valeur compétence 3:</label></td>
+                <td><input type="number" id="valeurComp2" min="0" max="9" value="0" /></td>
+            </tr>
+            <tr>
+                <td><label for="labelComp3">Label compétence 4:</label></td>
+                <td><input type="text" id="labelComp3" /></td>
+                <td><label for="valeurComp3">Valeur compétence 4:</label></td>
+                <td><input type="number" id="valeurComp3" min="0" max="9" value="0" /></td>
+            </tr>
+            <tr>
+                <td><label for="labelComp4">Label compétence 5:</label></td>
+                <td><input type="text" id="labelComp4" /></td>
+                <td><label for="valeurComp4">Valeur compétence 5:</label></td>
+                <td><input type="number" id="valeurComp4" min="0" max="9" value="0" /></td>
+            </tr>
+            <tr>
+                <td><label for="labelComp5">Label compétence 6:</label></td>
+                <td><input type="text" id="labelComp5" /></td>
+                <td><label for="valeurComp5">Valeur compétence 6:</label></td>
+                <td><input type="number" id="valeurComp5" min="0" max="9" value="0" /></td>
+            </tr>
+            <tr>
+                <td><label for="labelComp5">Citation:</label></td>
+                <!--<input type="text" id="citation" />-->
+                <td><textarea id="citation" rows="4" cols="50"></textarea></td>
+            </tr>
+            <tr>
+                <td><label for="whiteText">Texte Blanc/Noir:</label></td>
+                <td><input type="checkbox" id="whiteText" /></td>
+            </tr>
+        </table>
 
-<canvas id="canvas" style="width: 30%;">Sorry, no canvas available</canvas>
+        <canvas id="canvas" style="width: 400px;">Sorry, no canvas available</canvas>
 
-</body>
-<script src="tcgen.js"></script>
+    </body>
+    <script src="tcgen.js"></script>
 </html>

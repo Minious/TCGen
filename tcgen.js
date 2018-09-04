@@ -67,6 +67,15 @@ document.getElementById('fond').addEventListener('change', function(e) {
     img.src = URL.createObjectURL(e.target.files[0]);
 });
 
+document.getElementById('logo').addEventListener('change', function(e) {
+    var img = new Image;
+    img.onload = function() {
+        data.logo = img;
+        renderImage(data);
+    }
+    img.src = URL.createObjectURL(e.target.files[0]);
+});
+
 function wrapText(text, x, y, maxWidth, lineHeight) {
     var words = text.split(' ');
     var line = '';
@@ -89,11 +98,12 @@ function wrapText(text, x, y, maxWidth, lineHeight) {
 }
 
 function makeCombatMarks(){
+    var colors = ['#00aeef', '#fff200', '#ed1c24', '#fff', '#8dc63f', '#f7941d'];
+    
     var margin = 13;
     var widthMark = 99;
     var heightMark = 13;
     var yPosMarks = 864;
-    var colors = ['#ed1c24', '#fff200', '#f7941d', '#fff', '#00aeef', '#8dc63f'];
     var pos = [];
     for(var i=0;i<6;i++)
         pos.push(i);
@@ -127,8 +137,8 @@ function shuffle(a) {
 
 function drawEtoiles(rarete, etoile_doree, etoile_grise){
     var etoilesX = 75;
-    var etoilesFirstY = 354;
-    var etoilesSpacing = 53;
+    var etoilesFirstY = 357;
+    var etoilesSpacing = 54;
 
     for(var i=0;i<5;i++){
         var etoile = i < rarete ? etoile_doree : etoile_grise;
@@ -163,11 +173,17 @@ function renderImage(data){
 
         if(data.fond)
             ctx.drawImage(data.fond, 0, 0, canvas.width, canvas.height);
+        else{
+            ctx.fillStyle = "#fa00ff";
+            ctx.beginPath();
+            ctx.rect(0, 0, img.width, img.height);
+            ctx.fill();
+        }
 
         if(data.image)
             ctx.drawImage(data.image, 138, 131, 434, 276);
         
-        ctx.drawImage(img, 0, 0); // Or at whatever offset you like
+        ctx.drawImage(img, 0, 0);
         ctx.fillStyle = '#000';
         ctx.textAlign = "center";
         ctx.textBaseline="middle"; 
@@ -176,7 +192,7 @@ function renderImage(data){
         ctx.fillText(data.name ? data.name : "", 275, 70);
         
         ctx.font = '20px sans-serif';
-        ctx.fillText(data.surname ? data.surname : "", 275, 100);
+        ctx.fillText(data.surname ? data.surname : "", 275, 103);
 
         if(data.whiteText)
             ctx.fillStyle = '#fff';
@@ -187,17 +203,24 @@ function renderImage(data){
         
         var xFirstColumnComp = 81;
         var xSecondColumnComp = 327;
-        var yFirstRowComp = 475;
+        var yFirstRowComp = 478;
         var rowSpacingComp = 80;
         
         var offsetX = 45;
         var offsetY = 0;
         
         for(var i=0;i<6;i++){
+            ctx.fillStyle = "#000";//colors[i];
+            ctx.globalAlpha = 0.5;
             ctx.textAlign="center"; 
-            ctx.font = '40px sans-serif';
+            ctx.font = 'bold 40px sans-serif';
             ctx.fillText(data.valeurComp[i] || data.valeurComp[i] == 0 ? data.valeurComp[i] : "", i < 3 ? xFirstColumnComp : xSecondColumnComp, yFirstRowComp + rowSpacingComp * (i % 3));
+            ctx.globalAlpha = 1;
 
+            if(data.whiteText)
+                ctx.fillStyle = '#fff';
+            else
+                ctx.fillStyle = '#000';
             ctx.textAlign="left"; 
             ctx.font = '30px sans-serif';
             ctx.fillText(data.labelComp[i] ? data.labelComp[i] : "", (i < 3 ? xFirstColumnComp : xSecondColumnComp) + offsetX, yFirstRowComp + rowSpacingComp * (i % 3) + offsetY);
@@ -205,10 +228,10 @@ function renderImage(data){
 
         makeCombatMarks();
         drawEtoiles(data.rarete ? data.rarete : 1, etoile_doree, etoile_grise);
+
+        if(data.logo)
+            ctx.drawImage(data.logo, 502, 48, 70, 70);
     })
     .catch( (e) => alert(e) );
-    //img.src = 'https://s15.postimg.cc/jpk2p5xfv/template.png';
-    //img.src = 'https://image.ibb.co/mJQd2z/template.png';
-    //img.src = 'https://image.noelshack.com/fichiers/2018/36/1/1535994233-template2.png';
 }
 
