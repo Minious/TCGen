@@ -3,6 +3,7 @@ var canvas = document.getElementById('canvas'),
 
 var data = {valeurComp: [], labelComp: []};
 
+randomize();
 renderImage(data);
 
 function setListener(propertyName){
@@ -89,6 +90,15 @@ function wrapText(text, x, y, maxWidth, lineHeight) {
     ctx.fillText(line, x, y);
 }
 
+function randomize(){
+    var pos = [];
+    for(var i=0;i<6;i++)
+        pos.push(i);
+    data.pos = shuffle(pos);
+    data.posUpperMark = Math.floor(Math.random() * 6);
+    renderImage(data);
+}
+
 function makeCombatMarks(){
     var colors = ['#00aeef', '#fff200', '#ed1c24', '#fff', '#8dc63f', '#f7941d'];
     
@@ -96,23 +106,25 @@ function makeCombatMarks(){
     var widthMark = 99;
     var heightMark = 13;
     var yPosMarks = 864;
+    /*
     var pos = [];
     for(var i=0;i<6;i++)
         pos.push(i);
     pos = shuffle(pos);
+    */
 
     for(var i=0;i<6;i++){
         //alert(pos[i]);
-        ctx.fillStyle = colors[pos[i]];
+        ctx.fillStyle = colors[data.pos[i]];
         ctx.beginPath();
         ctx.rect(margin + i * widthMark, yPosMarks, widthMark, heightMark);
         ctx.fill();
     }
 
-    var posUpperMark = Math.floor(Math.random() * 6);
+    //var posUpperMark = Math.floor(Math.random() * 6);
     ctx.fillStyle = '#fff';
     ctx.beginPath();
-    ctx.rect(margin + posUpperMark * widthMark, 0, widthMark, heightMark);
+    ctx.rect(margin + data.posUpperMark * widthMark, 0, widthMark, heightMark);
     ctx.fill();
 }
 
