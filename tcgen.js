@@ -35,6 +35,12 @@ for(var i=0;i<6;i++){
 	setLabelCompListener(i);
 }
 
+function download(){
+    var download = document.getElementById("download");
+    var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+    download.setAttribute("href", image);
+}
+
 function setValeurCompListener(i){
   document.getElementById('valeurComp'+i).addEventListener('input', function() {
       data.valeurComp[i] = document.getElementById('valeurComp'+i).value;
@@ -150,16 +156,19 @@ function loadImage(url) {
   return new Promise((fulfill, reject) => {
     let imageObj = new Image();
     imageObj.src = url;
+    imageObj.crossOrigin = "Anonymous";
     imageObj.onload = () => fulfill(imageObj);
   });
 }
 
-
 function renderImage(data){
     Promise.all([
-        loadImage("template2.png"),
-        loadImage("etoile_doree.png"),
-        loadImage("etoile_grise.png"),
+        //loadImage("template2.png"),
+        //loadImage("etoile_doree.png"),
+        //loadImage("etoile_grise.png"),
+        loadImage("https://image.ibb.co/d65b7z/template2.png"),
+        loadImage("https://image.ibb.co/dyaLZe/etoile_doree.png"),
+        loadImage("https://image.ibb.co/dTguue/etoile_grise.png"),
     ])
     .then((images) => {
         var img = images[0];
@@ -181,7 +190,7 @@ function renderImage(data){
         }
 
         if(data.image)
-            ctx.drawImage(data.image, 138, 131, 434, 276);
+            ctx.drawImage(data.image, 137, 131, 435, 277);
         
         ctx.drawImage(img, 0, 0);
         ctx.fillStyle = '#000';
@@ -221,9 +230,12 @@ function renderImage(data){
                 ctx.fillStyle = '#fff';
             else
                 ctx.fillStyle = '#000';
+            //ctx.shadowBlur = 10;
+            ctx.shadowColor = "black";
             ctx.textAlign="left"; 
             ctx.font = '30px sans-serif';
             ctx.fillText(data.labelComp[i] ? data.labelComp[i] : "", (i < 3 ? xFirstColumnComp : xSecondColumnComp) + offsetX, yFirstRowComp + rowSpacingComp * (i % 3) + offsetY);
+            //ctx.shadowBlur = 0;
         }
 
         makeCombatMarks();
