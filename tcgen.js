@@ -1,33 +1,14 @@
-var canvas = document.getElementById('canvas'),
-    ctx = canvas.getContext('2d');
+var visibleCanvas = document.getElementById('visibleCanvas');
+var hiddenCanvas = document.getElementById('hiddenCanvas');
 
 var data = {valeurComp: [], labelComp: []};
 
-randomize();
-renderImage(data);
+var template, etoile_doree, etoile_grise;
 
-function setListener(propertyName){
-    if(document.getElementById(propertyName).type == 'checkbox') {
-        document.getElementById(propertyName).addEventListener('change', function() {
-            data[propertyName] = document.getElementById(propertyName).checked;
-            renderImage(data);
-        });
-    } else if(document.getElementById(propertyName).type == 'file') {
-        document.getElementById(propertyName).addEventListener('change', function(e) {
-            var img = new Image;
-            img.onload = function() {
-                data[propertyName] = img;
-                renderImage(data);
-            }
-            img.src = URL.createObjectURL(e.target.files[0]);
-        });
-    } else {
-        document.getElementById(propertyName).addEventListener('input', function() {
-            data[propertyName] = document.getElementById(propertyName).value;
-            renderImage(data);
-        });
-    }
-}
+var csvData;
+var csvImages;
+var csvFond;
+var csvLogo;
 
 var inputFields = [
     'whiteText',
@@ -41,35 +22,188 @@ var inputFields = [
     'logo',
 ]
 
-for(var i=0;i<inputFields.length;i++)
+for(var i=0;i<inputFields.length;i++){
     setListener(inputFields[i]);
+}
 
 for(var i=0;i<6;i++){
 	setValeurCompListener(i);
 	setLabelCompListener(i);
 }
 
-function download(){
-    var download = document.getElementById("download");
+setCsvListeners();
+
+loadStaticImages().then(() => {
+    randomize();
+    renderImage(visibleCanvas, data);
+    renderImage(hiddenCanvas, data);
+});
+
+document.getElementById('csv').addEventListener('change', function() {
+    Papa.parse(this.files[0], {
+        header: true,
+        dynamicTyping: true,
+        complete: function(results) {
+            parseCsv(results.data)
+        }
+    });
+});
+
+function parseCsv(data){
+    csvData = data;
+    for(var i=0;i<csvData.length;i++){
+        parseCsvComps(csvData[i]);
+    }
+}
+
+function massGenerate(){
+    for(var i=0;i<csvData.length;i++){
+        retrieveCsvImage(csvData[i]);
+        renderImage(hiddenCanvas, csvData[i]);
+        download(hiddenCanvas);
+    }
+}
+
+function loadStaticImages(){
+    return new Promise((resolve, reject) => {
+        loadImages([
+            "https://image.ibb.co/d65b7z/template2.png",
+            "https://image.ibb.co/dyaLZe/etoile_doree.png",
+            "https://image.ibb.co/dTguue/etoile_grise.png",
+        ])
+        .then((images) => {
+            template = images[0];
+            etoile_doree = images[1];
+            etoile_grise = images[2];
+            resolve();
+        })
+        .catch((e) => {
+            alert(e);
+        });
+    });
+}
+
+function loadImages(images){
+    var promises = [];
+    for(var i=0;i<images.length;i++){
+        promises.push(loadImage(images[i]));
+    }
+
+    return Promise.all(promises);
+}
+
+function parseCsvComps(curData){
+    curData.valeurComp = [];
+    curData.labelComp = [];
+    for(var i=0;i<6;i++){
+        curData.valeurComp.push(curData['valeurComp'+(i+1)]);
+        delete curData['valeurComp'+(i+1)];
+        curData.labelComp.push(curData['labelComp'+(i+1)]);
+        delete curData['labelComp'+(i+1)];
+    }
+}
+
+function setCsvListeners(){
+    setCsvFondListener();
+    setCsvLogoListener();
+    setCsvImagesListeners();
+}
+
+function setCsvFondListener(){
+    document.getElementById("csvFond").addEventListener('change', function(e) {
+        var img = new Image;
+        img.onload = function() {
+            csvFond = img;
+        }
+        img.src = URL.createObjectURL(e.target.files[0]);
+    });
+}
+
+function setCsvLogoListener(){
+    document.getElementById("csvLogo").addEventListener('change', function(e) {
+        var img = new Image;
+        img.onload = function() {
+            csvLogo = img;
+        }
+        img.src = URL.createObjectURL(e.target.files[0]);
+    });
+}
+
+function setCsvImagesListeners(){
+    document.getElementById("csvImages").addEventListener('change', function(e) {
+        csvImages = {};
+        for(var i=0;i<e.target.files.length;i++){
+            setCsvImageListener(e.target.files[i].name, e.target.files[i]);
+        }
+    });
+}
+
+function setCsvImageListener(name, file){
+    var img = new Image;
+    img.onload = function() {
+        csvImages[name] = img;
+    }
+    img.src = URL.createObjectURL(file);
+}
+
+function retrieveCsvImage(curData){
+    curData.image = csvImages[curData.image];
+    curData.fond = csvFond;
+    curData.logo = csvLogo;
+}
+
+function setListener(propertyName){
+    if(document.getElementById(propertyName).type == 'checkbox') {
+        document.getElementById(propertyName).addEventListener('change', function() {
+            data[propertyName] = document.getElementById(propertyName).checked;
+            renderImage(visibleCanvas, data);
+        });
+    } else if(document.getElementById(propertyName).type == 'file') {
+        document.getElementById(propertyName).addEventListener('change', function(e) {
+            var img = new Image;
+            img.onload = function() {
+                data[propertyName] = img;
+                renderImage(visibleCanvas, data);
+            }
+            img.src = URL.createObjectURL(e.target.files[0]);
+        });
+    } else {
+        document.getElementById(propertyName).addEventListener('input', function() {
+            data[propertyName] = document.getElementById(propertyName).value;
+            renderImage(visibleCanvas, data);
+        });
+    }
+}
+
+function download(canvas){
+    setHref(canvas);
+    var downloadButton = document.getElementById("download");
+    downloadButton.click();
+}
+
+function setHref(canvas){
+    if(!canvas)
+        canvas = visibleCanvas;
+    var downloadButton = document.getElementById("download");
     var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-    download.setAttribute("href", image);
+    downloadButton.setAttribute("href", image);
 }
 
 function setValeurCompListener(i){
   document.getElementById('valeurComp'+i).addEventListener('input', function() {
       data.valeurComp[i] = document.getElementById('valeurComp'+i).value;
-      renderImage(data);
+      renderImage(visibleCanvas, data);
   });
 }
 
 function setLabelCompListener(i){
   document.getElementById('labelComp'+i).addEventListener('input', function() {
       data.labelComp[i] = document.getElementById('labelComp'+i).value;
-      renderImage(data);
+      renderImage(visibleCanvas, data);
   });
 }
 
-function wrapText(text, x, y, maxWidth, lineHeight) {
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
     var words = text.split(' ');
     var line = '';
     ctx.textAlign="center"; 
@@ -96,32 +230,28 @@ function randomize(){
         pos.push(i);
     data.pos = shuffle(pos);
     data.posUpperMark = Math.floor(Math.random() * 6);
-    renderImage(data);
 }
 
-function makeCombatMarks(){
+function randomizeButton(){
+    randomize();
+    renderImage(visibleCanvas, data);
+}
+
+function makeCombatMarks(ctx){
     var colors = ['#00aeef', '#fff200', '#ed1c24', '#fff', '#8dc63f', '#f7941d'];
     
     var margin = 13;
     var widthMark = 99;
     var heightMark = 13;
     var yPosMarks = 864;
-    /*
-    var pos = [];
-    for(var i=0;i<6;i++)
-        pos.push(i);
-    pos = shuffle(pos);
-    */
 
     for(var i=0;i<6;i++){
-        //alert(pos[i]);
         ctx.fillStyle = colors[data.pos[i]];
         ctx.beginPath();
         ctx.rect(margin + i * widthMark, yPosMarks, widthMark, heightMark);
         ctx.fill();
     }
 
-    //var posUpperMark = Math.floor(Math.random() * 6);
     ctx.fillStyle = '#fff';
     ctx.beginPath();
     ctx.rect(margin + data.posUpperMark * widthMark, 0, widthMark, heightMark);
@@ -139,7 +269,7 @@ function shuffle(a) {
     return a;
 }
 
-function drawEtoiles(rarete, etoile_doree, etoile_grise){
+function drawEtoiles(ctx, rarete){
     var etoilesX = 75;
     var etoilesFirstY = 357;
     var etoilesSpacing = 54;
@@ -153,102 +283,88 @@ function drawEtoiles(rarete, etoile_doree, etoile_grise){
 function loadImage(url) {
   return new Promise((fulfill, reject) => {
     let imageObj = new Image();
-    imageObj.src = url;
     imageObj.crossOrigin = "Anonymous";
     imageObj.onload = () => fulfill(imageObj);
+    imageObj.src = url;
   });
 }
 
-function renderImage(data){
-    Promise.all([
-        //loadImage("template2.png"),
-        //loadImage("etoile_doree.png"),
-        //loadImage("etoile_grise.png"),
-        loadImage("https://image.ibb.co/d65b7z/template2.png"),
-        loadImage("https://image.ibb.co/dyaLZe/etoile_doree.png"),
-        loadImage("https://image.ibb.co/dTguue/etoile_grise.png"),
-    ])
-    .then((images) => {
-        var img = images[0];
-        var etoile_doree = images[1];
-        var etoile_grise = images[2];
+function renderImage(canvas, data){
+    var ctx = canvas.getContext('2d');
 
-        canvas.width = img.width;
-        canvas.height = img.height;
-        canvas.style.width  = img.width/2;
-        canvas.style.height = img.height/2;
+    canvas.width = template.width;
+    canvas.height = template.height;
+    canvas.style.width  = canvas.width/2;
+    canvas.style.height = canvas.height/2;
 
-        if(data.fond)
-            ctx.drawImage(data.fond, 0, 0, canvas.width, canvas.height);
-        else{
-            ctx.fillStyle = "#fa00ff";
-            ctx.beginPath();
-            ctx.rect(0, 0, img.width, img.height);
-            ctx.fill();
-        }
+    if(data.fond)
+        ctx.drawImage(data.fond, 0, 0, canvas.width, canvas.height);
+    else{
+        ctx.fillStyle = "#fa00ff";
+        ctx.beginPath();
+        ctx.rect(0, 0, canvas.width, canvas.height);
+        ctx.fill();
+    }
 
-        if(data.image)
-            ctx.drawImage(data.image, 137, 131, 435, 277);
-        
-        ctx.drawImage(img, 0, 0);
+    if(data.image)
+        ctx.drawImage(data.image, 137, 131, 435, 277);
+    
+    ctx.drawImage(template, 0, 0);
+    ctx.fillStyle = '#000';
+    ctx.textAlign = "center";
+    ctx.textBaseline="middle"; 
+    
+    ctx.font = '30px sans-serif';
+    ctx.fillText(data.name ? data.name : "", 275, 70);
+    
+    ctx.font = '20px sans-serif';
+    ctx.fillText(data.surname ? data.surname : "", 275, 103);
+
+    if(data.whiteText)
+        ctx.fillStyle = '#fff';
+    else
         ctx.fillStyle = '#000';
-        ctx.textAlign = "center";
-        ctx.textBaseline="middle"; 
-        
-        ctx.font = '30px sans-serif';
-        ctx.fillText(data.name ? data.name : "", 275, 70);
-        
-        ctx.font = '20px sans-serif';
-        ctx.fillText(data.surname ? data.surname : "", 275, 103);
+    if(data.textShadow) {
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "black";
+    }
+    wrapText(ctx, data.citation ? '«' + data.citation + '»' : "", canvas.width / 2, 700, canvas.width - 100, 22);
+    ctx.shadowBlur = 0;
+    
+    var xFirstColumnComp = 81;
+    var xSecondColumnComp = 327;
+    var yFirstRowComp = 478;
+    var rowSpacingComp = 80;
+    
+    var offsetX = 45;
+    var offsetY = 0;
+    
+    for(var i=0;i<6;i++){
+        ctx.fillStyle = "#000";
+        ctx.globalAlpha = 0.5;
+        ctx.textAlign="center"; 
+        ctx.font = 'bold 40px sans-serif';
+        ctx.fillText(data.valeurComp[i] || data.valeurComp[i] == 0 ? data.valeurComp[i] : "", i < 3 ? xFirstColumnComp : xSecondColumnComp, yFirstRowComp + rowSpacingComp * (i % 3));
+        ctx.globalAlpha = 1;
 
         if(data.whiteText)
             ctx.fillStyle = '#fff';
         else
             ctx.fillStyle = '#000';
-        //ctx.fillText(data.citation ? data.citation : "", canvas.width / 2, 650);
         if(data.textShadow) {
             ctx.shadowBlur = 10;
             ctx.shadowColor = "black";
         }
-        wrapText(data.citation ? '«' + data.citation + '»' : "", canvas.width / 2, 700, canvas.width - 100, 22);
+        ctx.textAlign="left"; 
+        ctx.font = '30px sans-serif';
+        ctx.fillText(data.labelComp[i] ? data.labelComp[i] : "", (i < 3 ? xFirstColumnComp : xSecondColumnComp) + offsetX, yFirstRowComp + rowSpacingComp * (i % 3) + offsetY);
         ctx.shadowBlur = 0;
-        
-        var xFirstColumnComp = 81;
-        var xSecondColumnComp = 327;
-        var yFirstRowComp = 478;
-        var rowSpacingComp = 80;
-        
-        var offsetX = 45;
-        var offsetY = 0;
-        
-        for(var i=0;i<6;i++){
-            ctx.fillStyle = "#000";//colors[i];
-            ctx.globalAlpha = 0.5;
-            ctx.textAlign="center"; 
-            ctx.font = 'bold 40px sans-serif';
-            ctx.fillText(data.valeurComp[i] || data.valeurComp[i] == 0 ? data.valeurComp[i] : "", i < 3 ? xFirstColumnComp : xSecondColumnComp, yFirstRowComp + rowSpacingComp * (i % 3));
-            ctx.globalAlpha = 1;
+    }
 
-            if(data.whiteText)
-                ctx.fillStyle = '#fff';
-            else
-                ctx.fillStyle = '#000';
-            if(data.textShadow) {
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = "black";
-            }
-            ctx.textAlign="left"; 
-            ctx.font = '30px sans-serif';
-            ctx.fillText(data.labelComp[i] ? data.labelComp[i] : "", (i < 3 ? xFirstColumnComp : xSecondColumnComp) + offsetX, yFirstRowComp + rowSpacingComp * (i % 3) + offsetY);
-            ctx.shadowBlur = 0;
-        }
+    makeCombatMarks(ctx);
+    drawEtoiles(ctx, data.rarete ? data.rarete : 1);
 
-        makeCombatMarks();
-        drawEtoiles(data.rarete ? data.rarete : 1, etoile_doree, etoile_grise);
-
-        if(data.logo)
-            ctx.drawImage(data.logo, 502, 48, 70, 70);
-    })
-    .catch( (e) => alert(e) );
+    if(data.logo)
+        ctx.drawImage(data.logo, 502, 48, 70, 70);
 }
 

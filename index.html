@@ -12,6 +12,25 @@
 
         <table style="margin-right: 40px; float: left;">
             <tr>
+                <td><label for="csv">CSV:</label></td>
+                <td><input type="file" id="csv" name="csv" accept=".csv"></td>
+            </tr>
+            <tr>
+                <td><label for="csvImages">Images:</label></td>
+                <td><input type="file" id="csvImages" name="csvImages" accept=".jpg, .jpeg, .png" multiple></td>
+            </tr>
+            <tr>
+                <td><label for="csvFond">Fond:</label></td>
+                <td><input type="file" id="csvFond" name="csvFond" accept=".jpg, .jpeg, .png"></td>
+            </tr>
+            <tr>
+                <td><label for="csvLogo">Logo:</label></td>
+                <td><input type="file" id="csvLogo" name="csvLogo" accept=".jpg, .jpeg, .png"></td>
+            </tr>
+            <tr>
+                <td><a id="massGenerate"><!--download="carte.png"--><button type="button" onClick="massGenerate()">Générer</button></a></td>
+            </tr>
+            <tr>
                 <td><label for="name">Nom:</label></td>
                 <td><input type="text" id="name" /></td>
             </tr>
@@ -84,15 +103,17 @@
                 <td><input type="checkbox" id="textShadow" /></td>
             </tr>
             <tr>
-                <td><button type="randomize" onClick="randomize()">Randomiser</button></td>
+                <td><button type="randomize" onClick="randomizeButton()">Randomiser</button></td>
             </tr>
             <tr>
-                <td><a id="download" download="carte.png"><button type="button" onClick="download()">Télécharger</button></a></td>
+                <td><a id="download" download="carte.png"><button type="button" onClick="setHref()">Télécharger</button></a></td>
             </tr>
         </table>
 
-        <canvas id="canvas" style="width: 400px;">Sorry, no canvas available</canvas>
+        <canvas id="visibleCanvas" style="width: 400px;" crossOrigin>Sorry, no canvas available</canvas>
+        <canvas id="hiddenCanvas" style="display: none;" crossOrigin>Sorry, no canvas available</canvas>
 
     </body>
+    <script src="papaparse.min.js"></script>
     <script src="tcgen.js"></script>
 </html>
