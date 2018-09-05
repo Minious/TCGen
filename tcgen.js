@@ -5,30 +5,43 @@ var data = {valeurComp: [], labelComp: []};
 
 renderImage(data);
 
-document.getElementById('whiteText').addEventListener('change', function() {
-    data.whiteText = document.getElementById('whiteText').checked;
-    renderImage(data);
-});
+function setListener(propertyName){
+    if(document.getElementById(propertyName).type == 'checkbox') {
+        document.getElementById(propertyName).addEventListener('change', function() {
+            data[propertyName] = document.getElementById(propertyName).checked;
+            renderImage(data);
+        });
+    } else if(document.getElementById(propertyName).type == 'file') {
+        document.getElementById(propertyName).addEventListener('change', function(e) {
+            var img = new Image;
+            img.onload = function() {
+                data[propertyName] = img;
+                renderImage(data);
+            }
+            img.src = URL.createObjectURL(e.target.files[0]);
+        });
+    } else {
+        document.getElementById(propertyName).addEventListener('input', function() {
+            data[propertyName] = document.getElementById(propertyName).value;
+            renderImage(data);
+        });
+    }
+}
 
-document.getElementById('name').addEventListener('input', function() {
-    data.name = document.getElementById('name').value;
-    renderImage(data);
-});
+var inputFields = [
+    'whiteText',
+    'textShadow',
+    'name',
+    'surname',
+    'citation',
+    'rarete',
+    'image',
+    'fond',
+    'logo',
+]
 
-document.getElementById('surname').addEventListener('input', function() {
-    data.surname = document.getElementById('surname').value;
-    renderImage(data);
-});
-
-document.getElementById('citation').addEventListener('input', function() {
-    data.citation = document.getElementById('citation').value;
-    renderImage(data);
-});
-
-document.getElementById('rarete').addEventListener('input', function() {
-    data.rarete = document.getElementById('rarete').value;
-    renderImage(data);
-});
+for(var i=0;i<inputFields.length;i++)
+    setListener(inputFields[i]);
 
 for(var i=0;i<6;i++){
 	setValeurCompListener(i);
@@ -54,33 +67,6 @@ function setLabelCompListener(i){
       renderImage(data);
   });
 }
-
-document.getElementById('image').addEventListener('change', function(e) {
-    var img = new Image;
-    img.onload = function() {
-        data.image = img;
-        renderImage(data);
-    }
-    img.src = URL.createObjectURL(e.target.files[0]);
-});
-
-document.getElementById('fond').addEventListener('change', function(e) {
-    var img = new Image;
-    img.onload = function() {
-        data.fond = img;
-        renderImage(data);
-    }
-    img.src = URL.createObjectURL(e.target.files[0]);
-});
-
-document.getElementById('logo').addEventListener('change', function(e) {
-    var img = new Image;
-    img.onload = function() {
-        data.logo = img;
-        renderImage(data);
-    }
-    img.src = URL.createObjectURL(e.target.files[0]);
-});
 
 function wrapText(text, x, y, maxWidth, lineHeight) {
     var words = text.split(' ');
@@ -208,7 +194,12 @@ function renderImage(data){
         else
             ctx.fillStyle = '#000';
         //ctx.fillText(data.citation ? data.citation : "", canvas.width / 2, 650);
+        if(data.textShadow) {
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "black";
+        }
         wrapText(data.citation ? '«' + data.citation + '»' : "", canvas.width / 2, 700, canvas.width - 100, 22);
+        ctx.shadowBlur = 0;
         
         var xFirstColumnComp = 81;
         var xSecondColumnComp = 327;
@@ -230,12 +221,14 @@ function renderImage(data){
                 ctx.fillStyle = '#fff';
             else
                 ctx.fillStyle = '#000';
-            //ctx.shadowBlur = 10;
-            ctx.shadowColor = "black";
+            if(data.textShadow) {
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = "black";
+            }
             ctx.textAlign="left"; 
             ctx.font = '30px sans-serif';
             ctx.fillText(data.labelComp[i] ? data.labelComp[i] : "", (i < 3 ? xFirstColumnComp : xSecondColumnComp) + offsetX, yFirstRowComp + rowSpacingComp * (i % 3) + offsetY);
-            //ctx.shadowBlur = 0;
+            ctx.shadowBlur = 0;
         }
 
         makeCombatMarks();
