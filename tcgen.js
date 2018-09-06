@@ -65,12 +65,44 @@ function parseCsv(data){
     }
 }
 
+function getImageFromData(curData, canvas){
+    console.log(curData);
+    console.log(canvas);
+    retrieveCsvImage(curData);
+    renderImage(canvas, curData);
+    return canvas.toDataURL("image/png");
+}
+
 function massGenerate(){
+    var margin = 8;
+    var heightCards = (210 - 3 * margin) / 2;
+    var widthCards = hiddenCanvas.width / hiddenCanvas.height * heightCards;
+    var nbCardsRow = 4; // Math.floor((297 - 2 * margin) / (widthCards + margin));
+    console.log(nbCardsRow);
+
+    var images = [];
     for(var i=0;i<csvData.length;i++){
         retrieveCsvImage(csvData[i]);
-        renderImage(hiddenCanvas, csvData[i]);
-        download(hiddenCanvas);
+        for(var j=0;j<csvData[i].nbExemplaires;j++){
+            randomize();
+            renderImage(hiddenCanvas, csvData[i]);
+            var image = hiddenCanvas.toDataURL("image/png");
+            images.push(image);
+        }
     }
+    
+    var doc = new jsPDF('landscape');
+    for(var i=0;i<images.length;i++){
+        if(i != 0 && i % (nbCardsRow * 2) == 0) {
+            doc.addPage()
+        }
+        var xCard = (297 - nbCardsRow * widthCards - (nbCardsRow - 1) * margin) / 2 + (margin + widthCards) * (i % nbCardsRow);
+        var yCard = (margin + (margin + heightCards) * Math.floor(i / nbCardsRow)) % (2 * (margin + heightCards));
+        doc.addImage(images[i], 'PNG', xCard, yCard, widthCards, heightCards);
+    }
+    doc.save('a4.pdf');
+    
+    //download(hiddenCanvas);
 }
 
 function setModeRadioButtonListener(radioButton){
