@@ -10,6 +10,8 @@ var csvImages;
 var csvFond;
 var csvLogo;
 
+var mode = "normal";
+
 var inputFields = [
     'whiteText',
     'textShadow',
@@ -30,6 +32,13 @@ for(var i=0;i<6;i++){
 	setValeurCompListener(i);
 	setLabelCompListener(i);
 }
+
+var radios = document.getElementsByName('mode');
+for (var i = 0, length = radios.length; i < length; i++){
+    setModeRadioButtonListener(radios[i]);
+}
+
+showModeTable();
 
 setCsvListeners();
 
@@ -62,6 +71,18 @@ function massGenerate(){
         renderImage(hiddenCanvas, csvData[i]);
         download(hiddenCanvas);
     }
+}
+
+function setModeRadioButtonListener(radioButton){
+    radioButton.addEventListener('input', function() {
+        mode = radioButton.value;
+        showModeTable();
+    });
+}
+
+function showModeTable(){
+    document.getElementById('csvMode').style.display = mode == 'csv' ? 'block' : 'none';
+    document.getElementById('normalMode').style.display = mode == 'normal' ? 'block' : 'none';
 }
 
 function loadStaticImages(){
@@ -167,7 +188,7 @@ function setListener(propertyName){
             }
             img.src = URL.createObjectURL(e.target.files[0]);
         });
-    } else {
+    } else if(document.getElementById(propertyName).type == 'text' || document.getElementById(propertyName).type == 'textarea' || document.getElementById(propertyName).type == 'number') {
         document.getElementById(propertyName).addEventListener('input', function() {
             data[propertyName] = document.getElementById(propertyName).value;
             renderImage(visibleCanvas, data);
