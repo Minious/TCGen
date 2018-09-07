@@ -1,7 +1,7 @@
 var visibleCanvas = document.getElementById('visibleCanvas');
 var hiddenCanvas = document.getElementById('hiddenCanvas');
 
-var data = {valuesSkills: [], labelsSkills: []};
+var data = initializeData();
 
 var template, goldenStar, greyStar;
 
@@ -41,24 +41,28 @@ for (var i = 0, length = radios.length; i < length; i++){
 }
 
 showModeTable();
-
 setCsvListeners();
+updateInputFields(data);
 
 loadStaticImages().then(() => {
     randomize();
     renderImage(visibleCanvas, data);
     renderImage(hiddenCanvas, data);
+    displaySavedCards();
 });
 
-document.getElementById('csvFile').addEventListener('change', function() {
-    Papa.parse(this.files[0], {
-        header: true,
-        dynamicTyping: true,
-        complete: function(results) {
-            parseCsv(results.data)
-        }
-    });
-});
+
+function initializeData(){
+    return {
+        name: "", 
+        nickname: "",
+        quote: "",
+        rarity: 1,
+        whiteText: false,
+        textShadow: false,
+        valuesSkills: [0, 0, 0, 0, 0, 0],
+        labelsSkills: ["", "", "", "", "", ""]}
+}
 
 function parseCsv(data){
     csvData = data;
@@ -120,9 +124,9 @@ function showModeTable(){
 function loadStaticImages(){
     return new Promise((resolve, reject) => {
         loadImages([
-            "https://image.ibb.co/mnRa5K/template.png",
-            "https://image.ibb.co/dyaLZe/etoile_doree.png",
-            "https://image.ibb.co/dTguue/etoile_grise.png",
+            "https://raw.githubusercontent.com/Minious/TCGen/master/template.png",
+            "https://raw.githubusercontent.com/Minious/TCGen/master/etoile_doree.png",
+            "https://raw.githubusercontent.com/Minious/TCGen/master/etoile_grise.png",
         ])
         .then((images) => {
             template = images[0];
@@ -157,11 +161,24 @@ function parseCsvSkills(curData){
 }
 
 function setCsvListeners(){
+    setCsvFileListner();
     setCsvBackgroundListener();
     setCsvLogoListener();
     setCsvImagesListeners();
     setCsvWhiteTextListener();
     setCsvTextShadowListener();
+}
+
+function setCsvFileListner(){
+    document.getElementById('csvFile').addEventListener('change', function() {
+        Papa.parse(this.files[0], {
+            header: true,
+            dynamicTyping: true,
+            complete: function(results) {
+                parseCsv(results.data)
+            }
+        });
+    });
 }
 
 function setCsvBackgroundListener(){
@@ -219,14 +236,95 @@ function retrieveCsvImage(curData){
     curData.logo = csvLogo;
 }
 
+function displaySavedCards(){
+    var savedCards = Cookies.getJSON('savedCards');
+    for(var key in savedCards){
+        //console.log(savedCards[key].thumbnail);
+        // added `width` , `height` properties to `img` attributes
+        //img.width = "250px";
+        //img.height = "250px";
+        renderImage(hiddenCanvas, savedCards[key]);
+        var thumbnail = resizeImage(hiddenCanvas, hiddenCanvas.width * 0.1, hiddenCanvas.height * 0.1);
+
+        var link = document.createElement("a");
+        var action = load(key);
+        link.onclick = action;
+
+        var img = document.createElement("img");
+        img.src = thumbnail;
+        img.style.margin = "10px";
+        var thumbnails = document.getElementById("thumbnails");
+
+        link.appendChild(img);
+        thumbnails.appendChild(link);
+    }
+}
+
+function save(){
+    var uniqid;
+    if(!data.id) {
+        uniqid = Date.now();
+    } else {
+        uniqid = data.id;
+    }
+    var savedCards = Cookies.getJSON('savedCards');
+    if(!savedCards) {
+        savedCards = {};
+    }
+    savedCards[uniqid] = data;
+    Cookies.set('savedCards', savedCards);
+    console.log(Cookies.getJSON('savedCards'));
+}
+
+function resizeImage(canvas, width, height) {
+    var newCanvas = document.createElement('canvas'),
+        ctx = newCanvas.getContext('2d');
+
+    newCanvas.width = width;
+    newCanvas.height = height;
+
+    ctx.drawImage(canvas, 0, 0, width, height);
+
+    return newCanvas.toDataURL();
+}
+
+function load(id){
+    console.log("test");
+    savedCards = Cookies.getJSON('savedCards');
+    console.log(savedCards);
+    data = savedCards[id];
+    updateInputFields(data);
+    renderImage(visibleCanvas, data);
+}
+
+function updateInputFields(data){
+    for(var i=0;i<inputFields.length;i++){
+        var field = document.getElementById(inputFields[i]);
+        if(field.type == 'checkbox') {
+            field.checked = data[inputFields[i]];
+        } else if(field.type == 'file') {
+            // TO DO
+        } else if(field.type == 'text' || field.type == 'textarea' || field.type == 'number') {
+            field.value = data[inputFields[i]];
+        }
+    }
+    for(var i=0;i<data['valuesSkills'].length;i++){
+        document.getElementById('valueSkill'+i).value = data['valuesSkills'][i];
+    }
+    for(var i=0;i<data['labelsSkills'].length;i++){
+        document.getElementById('labelSkill'+i).value = data['labelsSkills'][i];
+    }
+}
+
 function setListener(propertyName){
-    if(document.getElementById(propertyName).type == 'checkbox') {
-        document.getElementById(propertyName).addEventListener('change', function() {
-            data[propertyName] = document.getElementById(propertyName).checked;
+    var field = document.getElementById(propertyName);
+    if(field.type == 'checkbox') {
+        field.addEventListener('change', function() {
+            data[propertyName] = field.checked;
             renderImage(visibleCanvas, data);
         });
-    } else if(document.getElementById(propertyName).type == 'file') {
-        document.getElementById(propertyName).addEventListener('change', function(e) {
+    } else if(field.type == 'file') {
+        field.addEventListener('change', function(e) {
             var img = new Image;
             img.onload = function() {
                 data[propertyName] = img;
@@ -234,9 +332,9 @@ function setListener(propertyName){
             }
             img.src = URL.createObjectURL(e.target.files[0]);
         });
-    } else if(document.getElementById(propertyName).type == 'text' || document.getElementById(propertyName).type == 'textarea' || document.getElementById(propertyName).type == 'number') {
-        document.getElementById(propertyName).addEventListener('input', function() {
-            data[propertyName] = document.getElementById(propertyName).value;
+    } else if(field.type == 'text' || field.type == 'textarea' || field.type == 'number') {
+        field.addEventListener('input', function() {
+            data[propertyName] = field.value;
             renderImage(visibleCanvas, data);
         });
     }
@@ -385,7 +483,7 @@ function renderImage(canvas, data){
     ctx.fillText(data.name ? data.name : "", 275, 70);
     
     ctx.font = 'bold 24px sans-serif';
-    ctx.fillText('dit «' + (data.nickname ? data.nickname : "") + '»', 275, 102);
+    ctx.fillText(data.nickname ? 'dit «' + data.nickname + '»' : "", 275, 102);
 
     if(data.whiteText)
         ctx.fillStyle = '#fff';

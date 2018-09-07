@@ -48,6 +48,7 @@
             <canvas id="hiddenCanvas" style="display: none;" crossOrigin>Sorry, no canvas available</canvas>
         </div>
         <div id="normalMode">
+            <div id="thumbnails"></div>
             <table style="margin-right: 40px; float: left;">
                 <tr>
                     <td><label for="name">Nom:</label></td>
@@ -125,6 +126,12 @@
                     <td><button type="randomize" onClick="randomizeButton()">Randomiser</button></td>
                 </tr>
                 <tr>
+                    <td><button type="button" onClick="save()">Sauvegarder</button></td>
+                </tr>
+                <tr>
+                    <td><button type="button" onClick="load()">Charger</button></td>
+                </tr>
+                <tr>
                     <td><a id="download" download="carte.png"><button type="button" onClick="setHref()">Télécharger</button></a></td>
                 </tr>
             </table>
@@ -134,5 +141,6 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.5/jspdf.debug.js"></script>
     <script src="papaparse.min.js"></script>
+    <script src="js.cookie.js"></script>
     <script src="tcgen.js"></script>
 </html>
