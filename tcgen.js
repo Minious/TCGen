@@ -1,14 +1,16 @@
 var visibleCanvas = document.getElementById('visibleCanvas');
 var hiddenCanvas = document.getElementById('hiddenCanvas');
 
-var data = {valeurComp: [], labelComp: []};
+var data = {valuesSkills: [], labelsSkills: []};
 
-var template, etoile_doree, etoile_grise;
+var template, goldenStar, greyStar;
 
 var csvData;
 var csvImages;
-var csvFond;
+var csvBackground;
 var csvLogo;
+var csvWhiteText;
+var csvTextShadow;
 
 var mode = "normal";
 
@@ -16,11 +18,11 @@ var inputFields = [
     'whiteText',
     'textShadow',
     'name',
-    'surname',
-    'citation',
-    'rarete',
+    'nickname',
+    'quote',
+    'rarity',
     'image',
-    'fond',
+    'background',
     'logo',
 ]
 
@@ -29,8 +31,8 @@ for(var i=0;i<inputFields.length;i++){
 }
 
 for(var i=0;i<6;i++){
-	setValeurCompListener(i);
-	setLabelCompListener(i);
+	setValueSkillListener(i);
+	setLabelSkillListener(i);
 }
 
 var radios = document.getElementsByName('mode');
@@ -48,7 +50,7 @@ loadStaticImages().then(() => {
     renderImage(hiddenCanvas, data);
 });
 
-document.getElementById('csv').addEventListener('change', function() {
+document.getElementById('csvFile').addEventListener('change', function() {
     Papa.parse(this.files[0], {
         header: true,
         dynamicTyping: true,
@@ -61,13 +63,11 @@ document.getElementById('csv').addEventListener('change', function() {
 function parseCsv(data){
     csvData = data;
     for(var i=0;i<csvData.length;i++){
-        parseCsvComps(csvData[i]);
+        parseCsvSkills(csvData[i]);
     }
 }
 
 function getImageFromData(curData, canvas){
-    console.log(curData);
-    console.log(canvas);
     retrieveCsvImage(curData);
     renderImage(canvas, curData);
     return canvas.toDataURL("image/png");
@@ -83,7 +83,9 @@ function massGenerate(){
     var images = [];
     for(var i=0;i<csvData.length;i++){
         retrieveCsvImage(csvData[i]);
-        for(var j=0;j<csvData[i].nbExemplaires;j++){
+        csvData[i].whiteText = csvWhiteText;
+        csvData[i].textShadow = csvTextShadow;
+        for(var j=0;j<csvData[i].nbCopies;j++){
             randomize();
             renderImage(hiddenCanvas, csvData[i]);
             var image = hiddenCanvas.toDataURL("image/png");
@@ -101,8 +103,6 @@ function massGenerate(){
         doc.addImage(images[i], 'PNG', xCard, yCard, widthCards, heightCards);
     }
     doc.save('a4.pdf');
-    
-    //download(hiddenCanvas);
 }
 
 function setModeRadioButtonListener(radioButton){
@@ -120,14 +120,14 @@ function showModeTable(){
 function loadStaticImages(){
     return new Promise((resolve, reject) => {
         loadImages([
-            "https://image.ibb.co/d65b7z/template2.png",
+            "https://image.ibb.co/mnRa5K/template.png",
             "https://image.ibb.co/dyaLZe/etoile_doree.png",
             "https://image.ibb.co/dTguue/etoile_grise.png",
         ])
         .then((images) => {
             template = images[0];
-            etoile_doree = images[1];
-            etoile_grise = images[2];
+            goldenStar = images[1];
+            greyStar = images[2];
             resolve();
         })
         .catch((e) => {
@@ -145,28 +145,30 @@ function loadImages(images){
     return Promise.all(promises);
 }
 
-function parseCsvComps(curData){
-    curData.valeurComp = [];
-    curData.labelComp = [];
+function parseCsvSkills(curData){
+    curData.valuesSkills = [];
+    curData.labelsSkills = [];
     for(var i=0;i<6;i++){
-        curData.valeurComp.push(curData['valeurComp'+(i+1)]);
-        delete curData['valeurComp'+(i+1)];
-        curData.labelComp.push(curData['labelComp'+(i+1)]);
-        delete curData['labelComp'+(i+1)];
+        curData.valuesSkills.push(curData['valueSkill'+(i+1)]);
+        delete curData['valueSkill'+(i+1)];
+        curData.labelsSkills.push(curData['labelSkill'+(i+1)]);
+        delete curData['labelSkill'+(i+1)];
     }
 }
 
 function setCsvListeners(){
-    setCsvFondListener();
+    setCsvBackgroundListener();
     setCsvLogoListener();
     setCsvImagesListeners();
+    setCsvWhiteTextListener();
+    setCsvTextShadowListener();
 }
 
-function setCsvFondListener(){
-    document.getElementById("csvFond").addEventListener('change', function(e) {
+function setCsvBackgroundListener(){
+    document.getElementById("csvBackground").addEventListener('change', function(e) {
         var img = new Image;
         img.onload = function() {
-            csvFond = img;
+            csvBackground = img;
         }
         img.src = URL.createObjectURL(e.target.files[0]);
     });
@@ -199,9 +201,21 @@ function setCsvImageListener(name, file){
     img.src = URL.createObjectURL(file);
 }
 
+function setCsvWhiteTextListener(){
+    document.getElementById('csvWhiteText').addEventListener('change', function() {
+        csvWhiteText = document.getElementById('csvWhiteText').checked;
+    })
+}
+
+function setCsvTextShadowListener(){
+    document.getElementById('csvTextShadow').addEventListener('change', function() {
+        csvTextShadow = document.getElementById('csvTextShadow').checked;
+    })
+}
+
 function retrieveCsvImage(curData){
     curData.image = csvImages[curData.image];
-    curData.fond = csvFond;
+    curData.background = csvBackground;
     curData.logo = csvLogo;
 }
 
@@ -242,24 +256,24 @@ function setHref(canvas){
     downloadButton.setAttribute("href", image);
 }
 
-function setValeurCompListener(i){
-  document.getElementById('valeurComp'+i).addEventListener('input', function() {
-      data.valeurComp[i] = document.getElementById('valeurComp'+i).value;
+function setValueSkillListener(i){
+  document.getElementById('valueSkill'+i).addEventListener('input', function() {
+      data.valuesSkills[i] = document.getElementById('valueSkill'+i).value;
       renderImage(visibleCanvas, data);
   });
 }
 
-function setLabelCompListener(i){
-  document.getElementById('labelComp'+i).addEventListener('input', function() {
-      data.labelComp[i] = document.getElementById('labelComp'+i).value;
+function setLabelSkillListener(i){
+  document.getElementById('labelSkill'+i).addEventListener('input', function() {
+      data.labelsSkills[i] = document.getElementById('labelSkill'+i).value;
       renderImage(visibleCanvas, data);
   });
 }
 
-function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, textAlign) {
     var words = text.split(' ');
     var line = '';
-    ctx.textAlign="center"; 
+    ctx.textAlign = textAlign; 
 
     for(var n = 0; n < words.length; n++) {
       var testLine = line + words[n] + ' ';
@@ -322,14 +336,14 @@ function shuffle(a) {
     return a;
 }
 
-function drawEtoiles(ctx, rarete){
-    var etoilesX = 75;
-    var etoilesFirstY = 357;
-    var etoilesSpacing = 54;
+function drawStars(ctx, rarity){
+    var starsX = 75;
+    var starsFirstY = 357;
+    var starsSpacing = 54;
 
     for(var i=0;i<5;i++){
-        var etoile = i < rarete ? etoile_doree : etoile_grise;
-        ctx.drawImage(etoile, etoilesX, etoilesFirstY - i * etoilesSpacing);
+        var star = i < rarity ? goldenStar : greyStar;
+        ctx.drawImage(star, starsX, starsFirstY - i * starsSpacing);
     }
 }
 
@@ -350,8 +364,8 @@ function renderImage(canvas, data){
     canvas.style.width  = canvas.width/2;
     canvas.style.height = canvas.height/2;
 
-    if(data.fond)
-        ctx.drawImage(data.fond, 0, 0, canvas.width, canvas.height);
+    if(data.background)
+        ctx.drawImage(data.background, 0, 0, canvas.width, canvas.height);
     else{
         ctx.fillStyle = "#fa00ff";
         ctx.beginPath();
@@ -367,11 +381,11 @@ function renderImage(canvas, data){
     ctx.textAlign = "center";
     ctx.textBaseline="middle"; 
     
-    ctx.font = '30px sans-serif';
+    ctx.font = 'bold 35px sans-serif';
     ctx.fillText(data.name ? data.name : "", 275, 70);
     
-    ctx.font = '20px sans-serif';
-    ctx.fillText(data.surname ? data.surname : "", 275, 103);
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText('dit «' + (data.nickname ? data.nickname : "") + '»', 275, 102);
 
     if(data.whiteText)
         ctx.fillStyle = '#fff';
@@ -381,23 +395,25 @@ function renderImage(canvas, data){
         ctx.shadowBlur = 10;
         ctx.shadowColor = "black";
     }
-    wrapText(ctx, data.citation ? '«' + data.citation + '»' : "", canvas.width / 2, 700, canvas.width - 100, 22);
+    ctx.font = 'bold 24px sans-serif';
+    wrapText(ctx, data.quote ? '«' + data.quote + '»' : "", canvas.width / 2, 720, canvas.width - 100, 22, 'center');
     ctx.shadowBlur = 0;
     
-    var xFirstColumnComp = 81;
-    var xSecondColumnComp = 327;
-    var yFirstRowComp = 478;
-    var rowSpacingComp = 80;
+    var xFirstColumnSkills = 81;
+    var xSecondColumnSkills = 349;
+    var yFirstRowSkills = 475;
+    var rowSpacingSkills = 80;
     
     var offsetX = 45;
     var offsetY = 0;
+    var offsetYmultiline = -12;
     
     for(var i=0;i<6;i++){
         ctx.fillStyle = "#000";
         ctx.globalAlpha = 0.5;
         ctx.textAlign="center"; 
         ctx.font = 'bold 40px sans-serif';
-        ctx.fillText(data.valeurComp[i] || data.valeurComp[i] == 0 ? data.valeurComp[i] : "", i < 3 ? xFirstColumnComp : xSecondColumnComp, yFirstRowComp + rowSpacingComp * (i % 3));
+        ctx.fillText(data.valuesSkills[i] || data.valuesSkills[i] == 0 ? data.valuesSkills[i] : "", i < 3 ? xFirstColumnSkills : xSecondColumnSkills, yFirstRowSkills + rowSpacingSkills * (i % 3));
         ctx.globalAlpha = 1;
 
         if(data.whiteText)
@@ -408,14 +424,26 @@ function renderImage(canvas, data){
             ctx.shadowBlur = 10;
             ctx.shadowColor = "black";
         }
-        ctx.textAlign="left"; 
-        ctx.font = '30px sans-serif';
-        ctx.fillText(data.labelComp[i] ? data.labelComp[i] : "", (i < 3 ? xFirstColumnComp : xSecondColumnComp) + offsetX, yFirstRowComp + rowSpacingComp * (i % 3) + offsetY);
+        ctx.textAlign="left";
+        var maxWidthLabelSkill = 186;
+        var curLabelSkillFontSize = 30;
+        var minLabelSkillFontSize = 24;
+        ctx.font = 'bold '+curLabelSkillFontSize+'px sans-serif';
+
+        while(minLabelSkillFontSize < curLabelSkillFontSize && ctx.measureText(data.labelsSkills[i]).width >= maxWidthLabelSkill){
+            curLabelSkillFontSize--;
+            ctx.font = 'bold '+curLabelSkillFontSize+'px sans-serif';
+        }
+        if(ctx.measureText(data.labelsSkills[i]).width <= maxWidthLabelSkill){
+            ctx.fillText(data.labelsSkills[i] ? data.labelsSkills[i] : "", (i < 3 ? xFirstColumnSkills : xSecondColumnSkills) + offsetX, yFirstRowSkills + rowSpacingSkills * (i % 3) + offsetY);
+        } else {
+            wrapText(ctx, data.labelsSkills[i] ? data.labelsSkills[i] : "", (i < 3 ? xFirstColumnSkills : xSecondColumnSkills) + offsetX, yFirstRowSkills + rowSpacingSkills * (i % 3) + offsetYmultiline, maxWidthLabelSkill, 24, 'left');
+        }
         ctx.shadowBlur = 0;
     }
 
     makeCombatMarks(ctx);
-    drawEtoiles(ctx, data.rarete ? data.rarete : 1);
+    drawStars(ctx, data.rarity ? data.rarity : 1);
 
     if(data.logo)
         ctx.drawImage(data.logo, 502, 48, 70, 70);

@@ -9,124 +9,129 @@
         </style>
     </head>
     <body>
-
-        <div style="float: left;">
-            <div style="padding: 20px;">
-                <p>Mode:</p>
-                <input type="radio" name="mode" value="normal" checked>Normal<br>
-                <input type="radio" name="mode" value="csv">CSV<br>
-            </div>
-
-            <div id="csvMode">
-            <table style="margin-right: 40px;" id="csvTable">
-                    <tr>
-                        <td><label for="csv">CSV:</label></td>
-                        <td><input type="file" id="csv" name="csv" accept=".csv"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="csvImages">Images:</label></td>
-                        <td><input type="file" id="csvImages" name="csvImages" accept=".jpg, .jpeg, .png" multiple></td>
-                    </tr>
-                    <tr>
-                        <td><label for="csvFond">Fond:</label></td>
-                        <td><input type="file" id="csvFond" name="csvFond" accept=".jpg, .jpeg, .png"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="csvLogo">Logo:</label></td>
-                        <td><input type="file" id="csvLogo" name="csvLogo" accept=".jpg, .jpeg, .png"></td>
-                    </tr>
-                    <tr>
-                        <td><a id="massGenerate"><!--download="carte.png"--><button type="button" onClick="massGenerate()">Générer</button></a></td>
-                    </tr>
-                </table>
-                <canvas id="hiddenCanvas" style="display: none;" crossOrigin>Sorry, no canvas available</canvas>
-            </div>
-            <div id="normalMode">
-                <table style="margin-right: 40px; float: left;">
-                    <tr>
-                        <td><label for="name">Nom:</label></td>
-                        <td><input type="text" id="name" /></td>
-                    </tr>
-                    <tr>
-                        <td><label for="surname">Surnom:</label></td>
-                        <td><input type="text" id="surname" /></td>
-                    </tr>
-                    <tr>
-                        <td><label for="rarete">Rareté:</label></td>
-                        <td><input type="number" id="rarete" min="1" max="5" value="1" /></td>
-                    </tr>
-                    <tr>
-                        <td><label for="image">Image:</label></td>
-                        <td><input type="file" id="image" name="image" accept=".jpg, .jpeg, .png"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="fond">Fond:</label></td>
-                        <td><input type="file" id="fond" name="fond" accept=".jpg, .jpeg, .png"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="logo">Logo:</label></td>
-                        <td><input type="file" id="logo" name="logo" accept=".jpg, .jpeg, .png"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="labelComp0">Label compétence 1:</label></td>
-                        <td><input type="text" id="labelComp0" /></td>
-                        <td><label for="valeurComp0">Valeur compétence 1:</label></td>
-                        <td><input type="number" id="valeurComp0" min="0" max="9" value="0" /></td>
-                    </tr>
-                    <tr>
-                        <td><label for="labelComp1">Label compétence 2:</label></td>
-                        <td><input type="text" id="labelComp1" /></td>
-                        <td><label for="valeurComp1">Valeur compétence 2:</label></td>
-                        <td><input type="number" id="valeurComp1" min="0" max="9" value="0" /></td>
-                    </tr>
-                    <tr>
-                        <td><label for="labelComp2">Label compétence 3:</label></td>
-                        <td><input type="text" id="labelComp2" /></td>
-                        <td><label for="valeurComp2">Valeur compétence 3:</label></td>
-                        <td><input type="number" id="valeurComp2" min="0" max="9" value="0" /></td>
-                    </tr>
-                    <tr>
-                        <td><label for="labelComp3">Label compétence 4:</label></td>
-                        <td><input type="text" id="labelComp3" /></td>
-                        <td><label for="valeurComp3">Valeur compétence 4:</label></td>
-                        <td><input type="number" id="valeurComp3" min="0" max="9" value="0" /></td>
-                    </tr>
-                    <tr>
-                        <td><label for="labelComp4">Label compétence 5:</label></td>
-                        <td><input type="text" id="labelComp4" /></td>
-                        <td><label for="valeurComp4">Valeur compétence 5:</label></td>
-                        <td><input type="number" id="valeurComp4" min="0" max="9" value="0" /></td>
-                    </tr>
-                    <tr>
-                        <td><label for="labelComp5">Label compétence 6:</label></td>
-                        <td><input type="text" id="labelComp5" /></td>
-                        <td><label for="valeurComp5">Valeur compétence 6:</label></td>
-                        <td><input type="number" id="valeurComp5" min="0" max="9" value="0" /></td>
-                    </tr>
-                    <tr>
-                        <td><label for="labelComp5">Citation:</label></td>
-                        <td><textarea id="citation" rows="4" cols="50"></textarea></td>
-                    </tr>
-                    <tr>
-                        <td><label for="whiteText">Texte Blanc/Noir:</label></td>
-                        <td><input type="checkbox" id="whiteText" /></td>
-                    </tr>
-                    <tr>
-                        <td><label for="textShadow">Ombre texte:</label></td>
-                        <td><input type="checkbox" id="textShadow" /></td>
-                    </tr>
-                    <tr>
-                        <td><button type="randomize" onClick="randomizeButton()">Randomiser</button></td>
-                    </tr>
-                    <tr>
-                        <td><a id="download" download="carte.png"><button type="button" onClick="setHref()">Télécharger</button></a></td>
-                    </tr>
-                </table>
-                <canvas id="visibleCanvas" style="width: 400px;" crossOrigin>Sorry, no canvas available</canvas>
-            </div>
+        <div style="padding: 20px;">
+            <p>Mode:</p>
+            <input type="radio" name="mode" value="normal" checked>Normal<br>
+            <input type="radio" name="mode" value="csv">CSV<br>
         </div>
 
+        <div id="csvMode">
+            <table style="margin-right: 40px;" id="csvTable">
+                <tr>
+                    <td><label for="csvFile">CSV:</label></td>
+                    <td><input type="file" id="csvFile" accept=".csv"></td>
+                </tr>
+                <tr>
+                    <td><label for="csvImages">Images:</label></td>
+                    <td><input type="file" id="csvImages" accept=".jpg, .jpeg, .png" multiple></td>
+                </tr>
+                <tr>
+                    <td><label for="csvBackground">Fond:</label></td>
+                    <td><input type="file" id="csvBackground" accept=".jpg, .jpeg, .png"></td>
+                </tr>
+                <tr>
+                    <td><label for="csvLogo">Logo:</label></td>
+                    <td><input type="file" id="csvLogo" accept=".jpg, .jpeg, .png"></td>
+                </tr>
+                <tr>
+                    <td><label for="csvWhiteText">Texte Blanc/Noir:</label></td>
+                    <td><input type="checkbox" id="csvWhiteText" /></td>
+                </tr>
+                <tr>
+                    <td><label for="csvTextShadow">Ombre texte:</label></td>
+                    <td><input type="checkbox" id="csvTextShadow" /></td>
+                </tr>
+                <tr>
+                    <td><a id="massGenerate"><button type="button" onClick="massGenerate()">Générer</button></a></td>
+                </tr>
+            </table>
+            <canvas id="hiddenCanvas" style="display: none;" crossOrigin>Sorry, no canvas available</canvas>
+        </div>
+        <div id="normalMode">
+            <table style="margin-right: 40px; float: left;">
+                <tr>
+                    <td><label for="name">Nom:</label></td>
+                    <td><input type="text" id="name" /></td>
+                </tr>
+                <tr>
+                    <td><label for="nickname">Surnom:</label></td>
+                    <td><input type="text" id="nickname" /></td>
+                </tr>
+                <tr>
+                    <td><label for="rarity">Rareté:</label></td>
+                    <td><input type="number" id="rarity" min="1" max="5" value="1" /></td>
+                </tr>
+                <tr>
+                    <td><label for="image">Image:</label></td>
+                    <td><input type="file" id="image" accept=".jpg, .jpeg, .png"></td>
+                </tr>
+                <tr>
+                    <td><label for="background">Fond:</label></td>
+                    <td><input type="file" id="background" accept=".jpg, .jpeg, .png"></td>
+                </tr>
+                <tr>
+                    <td><label for="logo">Logo:</label></td>
+                    <td><input type="file" id="logo" accept=".jpg, .jpeg, .png"></td>
+                </tr>
+                <tr>
+                    <td><label for="labelSkill0">Label compétence 1:</label></td>
+                    <td><input type="text" id="labelSkill0" /></td>
+                    <td><label for="valueSkill0">Valeur compétence 1:</label></td>
+                    <td><input type="number" id="valueSkill0" min="0" max="9" value="0" /></td>
+                </tr>
+                <tr>
+                    <td><label for="labelSkill1">Label compétence 2:</label></td>
+                    <td><input type="text" id="labelSkill1" /></td>
+                    <td><label for="valueSkill1">Valeur compétence 2:</label></td>
+                    <td><input type="number" id="valueSkill1" min="0" max="9" value="0" /></td>
+                </tr>
+                <tr>
+                    <td><label for="labelSkill2">Label compétence 3:</label></td>
+                    <td><input type="text" id="labelSkill2" /></td>
+                    <td><label for="valueSkill2">Valeur compétence 3:</label></td>
+                    <td><input type="number" id="valueSkill2" min="0" max="9" value="0" /></td>
+                </tr>
+                <tr>
+                    <td><label for="labelSkill3">Label compétence 4:</label></td>
+                    <td><input type="text" id="labelSkill3" /></td>
+                    <td><label for="valueSkill3">Valeur compétence 4:</label></td>
+                    <td><input type="number" id="valueSkill3" min="0" max="9" value="0" /></td>
+                </tr>
+                <tr>
+                    <td><label for="labelSkill4">Label compétence 5:</label></td>
+                    <td><input type="text" id="labelSkill4" /></td>
+                    <td><label for="valueSkill4">Valeur compétence 5:</label></td>
+                    <td><input type="number" id="valueSkill4" min="0" max="9" value="0" /></td>
+                </tr>
+                <tr>
+                    <td><label for="labelSkill5">Label compétence 6:</label></td>
+                    <td><input type="text" id="labelSkill5" /></td>
+                    <td><label for="valueSkill5">Valeur compétence 6:</label></td>
+                    <td><input type="number" id="valueSkill5" min="0" max="9" value="0" /></td>
+                </tr>
+                <tr>
+                    <td><label for="quote">Citation:</label></td>
+                    <td colspan="3"><textarea id="quote" rows="4" cols="50"></textarea></td>
+                </tr>
+                <tr>
+                    <td><label for="whiteText">Texte Blanc/Noir:</label></td>
+                    <td><input type="checkbox" id="whiteText" /></td>
+                </tr>
+                <tr>
+                    <td><label for="textShadow">Ombre texte:</label></td>
+                    <td><input type="checkbox" id="textShadow" /></td>
+                </tr>
+                <tr>
+                    <td><button type="randomize" onClick="randomizeButton()">Randomiser</button></td>
+                </tr>
+                <tr>
+                    <td><a id="download" download="carte.png"><button type="button" onClick="setHref()">Télécharger</button></a></td>
+                </tr>
+            </table>
+            <canvas id="visibleCanvas" style="width: 400px;" crossOrigin>Sorry, no canvas available</canvas>
+        </div>
     </body>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.5/jspdf.debug.js"></script>
     <script src="papaparse.min.js"></script>
     <script src="tcgen.js"></script>
