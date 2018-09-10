@@ -51,6 +51,58 @@ loadStaticImages().then(() => {
     displaySavedCards();
 });
 
+/////////////////
+
+function opFileSystem(handler) {
+  requestFileSystem(
+    window.PERSISTENT,
+    1024*1024,
+    function(fs) {
+      fs.root.getDirectory(
+        "resources",
+        {create: true},
+        function(dir) {
+          handler();
+        },
+      );
+    },
+    function(e) {
+      console.log("error "+e.code+"initialising - see http://goo.gl/YW0TI");
+    }
+  );
+}
+
+fs.root.getFile(
+    "checkins/" + checkin.time,
+    {create: true, exclusive: true},
+    function(file) {
+        file.createWriter(function(writer) {
+            writer.onerror = fileStore.onError;
+            var bb = new WebKitBlobBuilder;
+            bb.append(JSON.stringify(checkin));
+            writer.write(bb.getBlob("text/plain"));
+            handler();
+        }, fileStore.onError);
+    },
+    fileStore.onError
+);
+
+checkinsDir.createReader().readEntries(function(files) {
+  var reader, fileCount=0, checkins=[];
+  var readNextFile = function() {
+    reader = new FileReader();
+    if (fileCount == files.length) return;
+    reader.onload = function(e) {
+      var checkin = JSON.parse(this.result);
+      if (moodQuery==checkin.mood||!moodQuery) handler(checkin);
+      readNextFile();
+    };
+    files[fileCount++].file(function(file) { reader.readAsText(file); });
+  };
+  readNextFile();
+});
+
+//////////
 
 function initializeData(){
     return {
@@ -237,27 +289,30 @@ function retrieveCsvImage(curData){
 }
 
 function displaySavedCards(){
-    var savedCards = Cookies.getJSON('savedCards');
-    for(var key in savedCards){
-        //console.log(savedCards[key].thumbnail);
-        // added `width` , `height` properties to `img` attributes
-        //img.width = "250px";
-        //img.height = "250px";
-        renderImage(hiddenCanvas, savedCards[key]);
-        var thumbnail = resizeImage(hiddenCanvas, hiddenCanvas.width * 0.1, hiddenCanvas.height * 0.1);
+    var savedCardsIds = Cookies.getJSON('savedCardsIds');
+    var thumbnails = document.getElementById("thumbnails");
 
+    while (thumbnails.firstChild) {
+        thumbnails.removeChild(thumbnails.firstChild);
+    }
+
+    for(var i=0;i<savedCardsIds.length;i++){
+        var id = savedCardsIds[i];
+        var thumbnail = localStorage.getItem(id+'Thumbnail');
         var link = document.createElement("a");
-        var action = load(key);
-        link.onclick = action;
+        link.onclick = getThumbnailAction(id);
 
         var img = document.createElement("img");
         img.src = thumbnail;
         img.style.margin = "10px";
-        var thumbnails = document.getElementById("thumbnails");
 
         link.appendChild(img);
         thumbnails.appendChild(link);
     }
+}
+
+function getThumbnailAction(id){
+    return function(){load(id);};
 }
 
 function save(){
@@ -267,13 +322,43 @@ function save(){
     } else {
         uniqid = data.id;
     }
-    var savedCards = Cookies.getJSON('savedCards');
-    if(!savedCards) {
-        savedCards = {};
+    var savedCardsIds = Cookies.getJSON('savedCardsIds');
+    if(!savedCardsIds) {
+        savedCardsIds = [];
     }
-    savedCards[uniqid] = data;
-    Cookies.set('savedCards', savedCards);
-    console.log(Cookies.getJSON('savedCards'));
+    savedCardsIds.push(uniqid);
+    Cookies.set(uniqid, data);
+    Cookies.set('savedCardsIds', savedCardsIds);
+    
+    renderImage(hiddenCanvas, data);
+    var thumbnail = resizeImage(hiddenCanvas, hiddenCanvas.width * 0.1, hiddenCanvas.height * 0.1);
+    console.log(thumbnail);
+    localStorage.setItem(uniqid+'Thumbnail', thumbnail);
+    if(data.image)
+        localStorage.setItem(uniqid+'Image', toBase64(data.image));
+    if(data.background)
+        localStorage.setItem(uniqid+'Background', toBase64(data.background));
+    if(data.logo)
+        localStorage.setItem(uniqid+'Logo', toBase64(data.logo));
+
+    console.log(Cookies.getJSON('savedCardsIds'));
+    console.log(Cookies.getJSON(uniqid));
+
+    displaySavedCards();
+}
+
+function toBase64(img){
+    var newCanvas = document.createElement('canvas'),
+        ctx = newCanvas.getContext('2d');
+
+    newCanvas.width = img.width;
+    newCanvas.height = img.height;
+
+    ctx.drawImage(img, 0, 0);
+
+    var imgURL = newCanvas.toDataURL();
+    console.log(imgURL);
+    return imgURL.replace(/^data:image\/(png|jpg);base64,/, "");
 }
 
 function resizeImage(canvas, width, height) {
@@ -289,10 +374,35 @@ function resizeImage(canvas, width, height) {
 }
 
 function load(id){
-    console.log("test");
-    savedCards = Cookies.getJSON('savedCards');
-    console.log(savedCards);
-    data = savedCards[id];
+    data = Cookies.getJSON(id);
+    if(localStorage.getItem(id+'Image')){
+        var imageImageRaw = localStorage.getItem(id+'Image');
+        var imageImage = document.createElement('img');
+        imageImage.onload = function() {
+            data.image = imageImage;
+            renderImage(visibleCanvas, data);
+        }
+        imageImage.src = "data:image/png;base64," + imageImageRaw;
+    }
+    if(localStorage.getItem(id+'Background')){
+        var backgroundImageRaw = localStorage.getItem(id+'Background');
+        var backgroundImage = document.createElement('img');
+        backgroundImage.onload = function() {
+            renderImage(visibleCanvas, data);
+        }
+        backgroundImage.src = "data:image/png;base64," + backgroundImageRaw;
+            data.background = backgroundImage;
+    }
+    if(localStorage.getItem(id+'Logo')){
+        var logoImageRaw = localStorage.getItem(id+'Logo');
+        var logoImage = document.createElement('img');
+        logoImage.onload = function() {
+            renderImage(visibleCanvas, data);
+        }
+        logoImage.src = "data:image/png;base64," + logoImageRaw;
+            data.logo = logoImage;
+    }
+    console.log(data);
     updateInputFields(data);
     renderImage(visibleCanvas, data);
 }
@@ -327,9 +437,11 @@ function setListener(propertyName){
         field.addEventListener('change', function(e) {
             var img = new Image;
             img.onload = function() {
+                console.log(img);
                 data[propertyName] = img;
                 renderImage(visibleCanvas, data);
             }
+            console.log(e.target.files[0]);
             img.src = URL.createObjectURL(e.target.files[0]);
         });
     } else if(field.type == 'text' || field.type == 'textarea' || field.type == 'number') {
