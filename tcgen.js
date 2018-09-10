@@ -34,11 +34,10 @@ function initFS(requestedBytes) {
 }
 
 var visibleCanvas = document.getElementById('visibleCanvas');
-var hiddenCanvas = document.getElementById('hiddenCanvas');
 
 var data = initializeData();
 
-var template, goldenStar, greyStar;
+var template;
 
 var csvData;
 var csvImages;
@@ -82,7 +81,6 @@ updateInputFields(data);
 loadStaticImages().then(() => {
     randomize();
     renderImage(visibleCanvas, data);
-    renderImage(hiddenCanvas, data);
     initFS(1024*1024*1024 /*1024MB = 1GB*/).then(() => displaySavedCards());
 });
 
@@ -114,7 +112,7 @@ function getImageFromData(curData, canvas){
 function massGenerate(){
     var margin = 8;
     var heightCards = (210 - 3 * margin) / 2;
-    var widthCards = hiddenCanvas.width / hiddenCanvas.height * heightCards;
+    var widthCards = visibleCanvas.width / visibleCanvas.height * heightCards;
     var nbCardsRow = 4; // Math.floor((297 - 2 * margin) / (widthCards + margin));
     console.log(nbCardsRow);
 
@@ -125,8 +123,11 @@ function massGenerate(){
         csvData[i].textShadow = csvTextShadow;
         for(var j=0;j<csvData[i].nbCopies;j++){
             randomize();
-            renderImage(hiddenCanvas, csvData[i]);
-            var image = hiddenCanvas.toDataURL("image/png");
+
+            var newCanvas = document.createElement('canvas');
+            renderImage(newCanvas, csvData[i]);
+
+            var image = newCanvas.toDataURL("image/png");
             images.push(image);
         }
     }
@@ -158,9 +159,9 @@ function showModeTable(){
 function loadStaticImages(){
     return new Promise((resolve, reject) => {
         loadImages([
-            "https://raw.githubusercontent.com/Minious/TCGen/master/template.png",
+            "https://raw.githubusercontent.com/Minious/TCGen/master/template.png"/*
             "https://raw.githubusercontent.com/Minious/TCGen/master/etoile_doree.png",
-            "https://raw.githubusercontent.com/Minious/TCGen/master/etoile_grise.png",
+            "https://raw.githubusercontent.com/Minious/TCGen/master/etoile_grise.png",*/
         ])
         .then((images) => {
             template = images[0];
@@ -564,14 +565,32 @@ function shuffle(a) {
 }
 
 function drawStars(ctx, rarity){
-    var starsX = 75;
-    var starsFirstY = 357;
+    var starsX = 96;
+    var starsFirstY = 377;
     var starsSpacing = 54;
 
     for(var i=0;i<5;i++){
         var star = i < rarity ? goldenStar : greyStar;
-        ctx.drawImage(star, starsX, starsFirstY - i * starsSpacing);
+        ctx.fillStyle = i < rarity ? '#ffd91c' : '#888';
+        drawStar(ctx, starsX, starsFirstY - i * starsSpacing);
     }
+}
+
+function drawStar(ctx, cx, cy){
+    //var cx = 96, cy = 162;
+    var rOut = 21;
+    var rMid = 19;
+    var rMin = 10;
+    var theta_step = 2 * Math.PI / 10;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rOut, 0, Math.PI * 2, true);
+    ctx.moveTo(cx, cy - rMid);
+    for(var i=0;i<11;i++){
+        var x = (rMin * (i%2) + rMid * ((i+1)%2)) * Math.cos(- Math.PI / 2 + theta_step * i);
+        var y = (rMin * (i%2) + rMid * ((i+1)%2)) * Math.sin(- Math.PI / 2 + theta_step * i);
+        ctx.lineTo(cx + x, cy + y);
+    }
+    ctx.fill();
 }
 
 function loadImage(url) {
