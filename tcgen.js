@@ -58,6 +58,7 @@ var inputFields = [
     'image',
     'background',
     'logo',
+    'logoStroke',
 ]
 
 for(var i=0;i<inputFields.length;i++){
@@ -92,6 +93,7 @@ function initializeData(){
         rarity: 1,
         whiteText: false,
         textShadow: false,
+        logoStroke: false,
         valuesSkills: [0, 0, 0, 0, 0, 0],
         labelsSkills: ["", "", "", "", "", ""]}
 }
@@ -430,8 +432,6 @@ function updateInputFields(data){
         var field = document.getElementById(inputFields[i]);
         if(field.type == 'checkbox') {
             field.checked = data[inputFields[i]];
-        } else if(field.type == 'file') {
-            // TO DO
         } else if(field.type == 'text' || field.type == 'textarea' || field.type == 'number') {
             field.value = data[inputFields[i]];
         }
@@ -691,7 +691,24 @@ function renderImage(canvas, data){
     makeCombatMarks(ctx);
     drawStars(ctx, data.rarity ? data.rarity : 1);
 
-    if(data.logo)
-        ctx.drawImage(data.logo, 502, 48, 70, 70);
+    if(data.logo){
+        var logo = data.logo;
+
+        if(data.logoStroke){
+            var newCanvas = document.createElement('canvas'),
+                newCtx = newCanvas.getContext('2d');
+
+            var strokeWeight = 100;
+
+            newCanvas.width = data.logo.width + 2 * strokeWeight;
+            newCanvas.height = data.logo.height + 2 * strokeWeight;
+
+            newCtx.drawImage(data.logo, strokeWeight, strokeWeight);
+
+            logo = addStickerEffect(newCanvas, strokeWeight);
+        }
+        
+        ctx.drawImage(logo, 502, 48, 70, 70);
+    }
 }
 
