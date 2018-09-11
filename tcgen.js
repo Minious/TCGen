@@ -46,6 +46,14 @@ var csvLogo;
 var csvWhiteText;
 var csvTextShadow;
 
+var isOpera;
+var isFirefox;
+var isSafari;
+var isIE;
+var isEdge;
+var isChrome;
+var isBlink;
+
 var mode = "normal";
 
 var inputFields = [
@@ -75,6 +83,8 @@ for (var i = 0, length = radios.length; i < length; i++){
     setModeRadioButtonListener(radios[i]);
 }
 
+detectBrowser();
+showSaveButton();
 showModeTable();
 setCsvListeners();
 updateInputFields(data);
@@ -84,6 +94,37 @@ loadStaticImages().then(() => {
     renderImage(visibleCanvas, data);
     initFS(1024*1024*1024 /*1024MB = 1GB*/).then(() => displaySavedCards());
 });
+
+function showSaveButton(){
+    if(!isChrome){
+        document.getElementById('saveButton').style.display = 'none';
+    } else {
+        document.getElementById('messageChrome').style.display = 'none';
+    }
+}
+
+function detectBrowser(){
+    // Opera 8.0+
+    isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+
+    // Firefox 1.0+
+    isFirefox = typeof InstallTrigger !== 'undefined';
+
+    // Safari 3.0+ "[object HTMLElementConstructor]" 
+    isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
+
+    // Internet Explorer 6-11
+    isIE = /*@cc_on!@*/false || !!document.documentMode;
+
+    // Edge 20+
+    isEdge = !isIE && !!window.StyleMedia;
+
+    // Chrome 1+
+    isChrome = !!window.chrome && !!window.chrome.webstore;
+
+    // Blink engine detection
+    isBlink = (isChrome || isOpera) && !!window.CSS;
+}
 
 function initializeData(){
     return {

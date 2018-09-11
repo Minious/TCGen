@@ -128,7 +128,10 @@
                     <td><button type="randomize" onClick="randomizeButton()">Randomiser</button></td>
                 </tr>
                 <tr>
-                    <td><button type="button" onClick="save()">Sauvegarder</button></td>
+                    <td>
+                        <button id="saveButton" type="button" onClick="save()">Sauvegarder</button>
+                        <p id="messageChrome">Utiliser Chrome pour sauvegarder des cartes</p>
+                    </td>
                 </tr>
                 <tr>
                     <td><a id="download" download="carte.png"><button type="button" onClick="setHref()">Télécharger</button></a></td>
