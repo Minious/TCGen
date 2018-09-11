@@ -682,6 +682,20 @@ function loadImage(url) {
   });
 }
 
+function displayCheckedPattern(ctx, x, y, size, nbX, nbY){
+    for(var i=0;i<nbX;i++){
+        for(var j=0;j<nbY;j++){
+            if((i + j) % 2 == 0)
+                ctx.fillStyle = "#fff";
+            else
+                ctx.fillStyle = "#ddd";
+            ctx.beginPath();
+            ctx.rect(x + i*size, y + j*size, size, size);
+            ctx.fill();
+        }
+    }
+}
+
 function renderImage(canvas, data){
     var ctx = canvas.getContext('2d');
 
@@ -693,10 +707,8 @@ function renderImage(canvas, data){
     if(data.background)
         ctx.drawImage(data.background, 0, 0, canvas.width, canvas.height);
     else{
-        ctx.fillStyle = "#fa00ff";
-        ctx.beginPath();
-        ctx.rect(0, 0, canvas.width, canvas.height);
-        ctx.fill();
+        var sizeCell = 42;
+        displayCheckedPattern(ctx, 0, 0, sizeCell, canvas.width / sizeCell, canvas.height / sizeCell);
     }
 
     if(data.image)
