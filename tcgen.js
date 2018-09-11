@@ -92,7 +92,7 @@ for (var i = 0, length = radios.length; i < length; i++){
 }
 
 detectBrowser();
-showSaveButton();
+showChromeButtons();
 showModeTable();
 setCsvListeners();
 updateInputFields(data);
@@ -103,9 +103,10 @@ loadStaticImages().then(() => {
     initFS(1024*1024*1024 /*1024MB = 1GB*/).then(() => displaySavedCards());
 });
 
-function showSaveButton(){
+function showChromeButtons(){
     if(!isChrome){
         document.getElementById('saveButton').style.display = 'none';
+        document.getElementById('resetButton').style.display = 'none';
     } else {
         document.getElementById('messageChrome').style.display = 'none';
     }
@@ -473,7 +474,6 @@ function load(id){
         }
         logoImage.src = "data:image/png;base64," + result;
     });
-    console.log(data);
     updateInputFields(data);
     renderImage(visibleCanvas, data);
 }
@@ -493,7 +493,7 @@ function updateInputFields(data){
     for(var i=0;i<data['labelsSkills'].length;i++){
         document.getElementById('labelSkill'+i).value = data['labelsSkills'][i];
     }
-    updateSumValuesField();
+    updateSumValuesField(data);
 }
 
 function setListener(propertyName){
@@ -517,6 +517,9 @@ function setListener(propertyName){
     } else if(field.type == 'text' || field.type == 'textarea' || field.type == 'number') {
         field.addEventListener('input', function() {
             data[propertyName] = field.value;
+            if(field.id == "rarity"){
+                updateSumValuesField(data);
+            }
             renderImage(visibleCanvas, data);
         });
     }
@@ -539,30 +542,31 @@ function setHref(canvas){
 function getSumValuesFields(){
     var sum = 0;
     for(var j=0;j<data.valuesSkills.length;j++){
-        console.log()
         sum += parseInt(document.getElementById('valueSkill'+j).value);
     }
     return sum;
 }
 
-function updateSumValuesField(){
+function getMaxValues(data){
+    return parseInt(data.rarity) * 5 + 15;
+}
+
+function updateSumValuesField(data){
     var sum = getSumValuesFields();
-    document.getElementById("sumValues").innerText = sum;
+    var max = getMaxValues(data);
+    document.getElementById("sumValues").innerText = sum + " / " + max;
 }
 
 function setValueSkillListener(i){
   document.getElementById('valueSkill'+i).addEventListener('input', function() {
-        var maxValues = data.rarity * 5 + 20;
-        var sum = getSumValuesFields();
-        console.log("sum = "+maxValues);
-        if(sum <= maxValues) {
+        var maxValues = getMaxValues(data);
+        var sumValues = getSumValuesFields();
+        if(sumValues <= maxValues) {
             data.valuesSkills[i] = document.getElementById('valueSkill'+i).value;
-            console.log("max = "+maxValues);
-            updateSumValuesField();
+            updateSumValuesField(data);
             renderImage(visibleCanvas, data);
         } else {
             document.getElementById('valueSkill'+i).value = data.valuesSkills[i];
-            console.log("values = "+data.valuesSkills);
         }
   });
 }
