@@ -10,20 +10,6 @@ function initFS(requestedBytes) {
         window.webkitStorageInfo.requestQuota(PERSISTENT, requestedBytes, function(grantedBytes) {
             window.requestFileSystem(window.PERSISTENT, grantedBytes, function(filesystem) {
                 fs = filesystem;
-                
-                // Empty file system
-                /*
-                var dirReader = fs.root.createReader();
-                dirReader.readEntries(function(entries) {
-                    for (var i = 0, entry; entry = entries[i]; ++i) {
-                        if (entry.isDirectory) {
-                            entry.removeRecursively(function() {}, errorHandler);
-                        } else {
-                            entry.remove(function() {}, errorHandler);
-                        }
-                    }
-                }, errorHandler);
-                */
 
                 fulfill();
             }, errorHandler);
@@ -31,6 +17,28 @@ function initFS(requestedBytes) {
             console.log('Error', e);
         });
     });
+}
+
+function reset(){
+    if (confirm('Vous êtes sûr de vouloir supprimer votre historique de cartes ?')) {
+        // Empty file system
+        var dirReader = fs.root.createReader();
+        dirReader.readEntries(function(entries) {
+            for (var i = 0, entry; entry = entries[i]; ++i) {
+                if (entry.isDirectory) {
+                    entry.removeRecursively(function() {}, errorHandler);
+                } else {
+                    entry.remove(function() {}, errorHandler);
+                }
+            }
+        }, errorHandler);
+
+        Object.keys(Cookies.get()).forEach(function(cookie) {
+            Cookies.remove(cookie, {});
+        });
+
+        displaySavedCards();
+    }
 }
 
 var visibleCanvas = document.getElementById('visibleCanvas');
@@ -317,13 +325,13 @@ function retrieveCsvImage(curData){
 function displaySavedCards(){
     var savedCardsIds = Cookies.getJSON('savedCardsIds');
     console.log("loading thumbnails : " + savedCardsIds);
+    var thumbnails = document.getElementById("thumbnails");
+
+    while (thumbnails.firstChild) {
+        thumbnails.removeChild(thumbnails.firstChild);
+    }
+
     if(savedCardsIds){
-        var thumbnails = document.getElementById("thumbnails");
-
-        while (thumbnails.firstChild) {
-            thumbnails.removeChild(thumbnails.firstChild);
-        }
-
         for(var i=savedCardsIds.length-1;i>=0;i--){
             var id = savedCardsIds[i];
             createImageThumbnail(id);
