@@ -144,7 +144,9 @@ function initializeData(){
         textShadow: false,
         logoStroke: false,
         valuesSkills: [0, 0, 0, 0, 0, 0],
-        labelsSkills: ["", "", "", "", "", ""]}
+        labelsSkills: ["", "", "", "", "", ""],
+        sumValues: 0,
+    }
 }
 
 function parseCsv(data){
@@ -491,6 +493,7 @@ function updateInputFields(data){
     for(var i=0;i<data['labelsSkills'].length;i++){
         document.getElementById('labelSkill'+i).value = data['labelsSkills'][i];
     }
+    updateSumValuesField();
 }
 
 function setListener(propertyName){
@@ -533,10 +536,34 @@ function setHref(canvas){
     downloadButton.setAttribute("href", image);
 }
 
+function getSumValuesFields(){
+    var sum = 0;
+    for(var j=0;j<data.valuesSkills.length;j++){
+        console.log()
+        sum += parseInt(document.getElementById('valueSkill'+j).value);
+    }
+    return sum;
+}
+
+function updateSumValuesField(){
+    var sum = getSumValuesFields();
+    document.getElementById("sumValues").innerText = sum;
+}
+
 function setValueSkillListener(i){
   document.getElementById('valueSkill'+i).addEventListener('input', function() {
-      data.valuesSkills[i] = document.getElementById('valueSkill'+i).value;
-      renderImage(visibleCanvas, data);
+        var maxValues = data.rarity * 5 + 20;
+        var sum = getSumValuesFields();
+        console.log("sum = "+maxValues);
+        if(sum <= maxValues) {
+            data.valuesSkills[i] = document.getElementById('valueSkill'+i).value;
+            console.log("max = "+maxValues);
+            updateSumValuesField();
+            renderImage(visibleCanvas, data);
+        } else {
+            document.getElementById('valueSkill'+i).value = data.valuesSkills[i];
+            console.log("values = "+data.valuesSkills);
+        }
   });
 }
 
