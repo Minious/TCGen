@@ -45,7 +45,8 @@ var visibleCanvas = document.getElementById('visibleCanvas');
 
 var data = initializeData();
 
-var template;
+var templateWhite;
+var templateBlack;
 
 var csvData;
 var csvImages;
@@ -75,6 +76,7 @@ var inputFields = [
     'background',
     'logo',
     'logoStroke',
+    'whiteBorder',
 ]
 
 for(var i=0;i<inputFields.length;i++){
@@ -213,14 +215,12 @@ function showModeTable(){
 function loadStaticImages(){
     return new Promise((resolve, reject) => {
         loadImages([
-            "https://raw.githubusercontent.com/Minious/TCGen/master/template.png"/*
-            "https://raw.githubusercontent.com/Minious/TCGen/master/etoile_doree.png",
-            "https://raw.githubusercontent.com/Minious/TCGen/master/etoile_grise.png",*/
+            "https://raw.githubusercontent.com/Minious/TCGen/master/templateBlack.png",
+            "https://raw.githubusercontent.com/Minious/TCGen/master/templateWhite.png",
         ])
         .then((images) => {
-            template = images[0];
-            goldenStar = images[1];
-            greyStar = images[2];
+            templateBlack = images[0];
+            templateWhite = images[1];
             resolve();
         })
         .catch((e) => {
@@ -627,7 +627,7 @@ function makeCombatMarks(ctx){
         ctx.fill();
     }
 
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = data.whiteBorder ? '#fff' : '#000';
     ctx.beginPath();
     ctx.rect(margin + data.posUpperMark * widthMark, 0, widthMark, heightMark);
     ctx.fill();
@@ -650,7 +650,6 @@ function drawStars(ctx, rarity){
     var starsSpacing = 54;
 
     for(var i=0;i<5;i++){
-        var star = i < rarity ? goldenStar : greyStar;
         ctx.fillStyle = i < rarity ? '#ffd91c' : '#888';
         drawStar(ctx, starsX, starsFirstY - i * starsSpacing);
     }
@@ -699,8 +698,8 @@ function displayCheckedPattern(ctx, x, y, size, nbX, nbY){
 function renderImage(canvas, data){
     var ctx = canvas.getContext('2d');
 
-    canvas.width = template.width;
-    canvas.height = template.height;
+    canvas.width = templateWhite.width;
+    canvas.height = templateWhite.height;
     canvas.style.width  = canvas.width/2;
     canvas.style.height = canvas.height/2;
 
@@ -714,11 +713,15 @@ function renderImage(canvas, data){
     if(data.image)
         ctx.drawImage(data.image, 137, 131, 435, 277);
     
-    ctx.drawImage(template, 0, 0);
+    ctx.drawImage(data.whiteBorder ? templateWhite : templateBlack, 0, 0);
     ctx.fillStyle = '#000';
     ctx.textAlign = "center";
     ctx.textBaseline="middle"; 
     
+    if(data.whiteBorder)
+        ctx.fillStyle = '#000';
+    else
+        ctx.fillStyle = '#fff';
     ctx.font = 'bold 35px sans-serif';
     ctx.fillText(data.name ? data.name : "", 275, 70);
     
