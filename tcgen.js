@@ -77,6 +77,7 @@ var inputFields = [
     'logo',
     'logoStroke',
     'whiteBorder',
+    'isSpecialCard',
 ]
 
 for(var i=0;i<inputFields.length;i++){
@@ -149,6 +150,7 @@ function initializeData(){
         valuesSkills: [0, 0, 0, 0, 0, 0],
         labelsSkills: ["", "", "", "", "", ""],
         sumValues: 0,
+        isSpecialCard: false,
     }
 }
 
@@ -501,6 +503,9 @@ function setListener(propertyName){
     if(field.type == 'checkbox') {
         field.addEventListener('change', function() {
             data[propertyName] = field.checked;
+            if(field.id == "isSpecialCard"){
+                updateSumValuesField(data);
+            }
             renderImage(visibleCanvas, data);
         });
     } else if(field.type == 'file') {
@@ -548,7 +553,7 @@ function getSumValuesFields(){
 }
 
 function getMaxValues(data){
-    return parseInt(data.rarity) * 5 + 15;
+    return data.isSpecialCard ? 6 * 9 : parseInt(data.rarity) * 5 + 15;
 }
 
 function updateSumValuesField(data){
@@ -652,7 +657,8 @@ function drawStars(ctx, data){
     var rarity = data.rarity ? data.rarity : 1;
 
     for(var i=0;i<5;i++){
-        drawStar(ctx, starsX, starsFirstY - i * starsSpacing, i < rarity ? '#ffd91c' : '#888');
+        var color = data.isSpecialCard ? "#ff00fa" : (i < rarity ? '#ffd91c' : '#888');
+        drawStar(ctx, starsX, starsFirstY - i * starsSpacing, color);
     }
 }
 
