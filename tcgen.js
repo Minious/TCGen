@@ -54,6 +54,8 @@ var csvBackground;
 var csvLogo;
 var csvWhiteText;
 var csvTextShadow;
+var csvLogoStroke;
+var csvWhiteBorder;
 
 var isOpera;
 var isFirefox;
@@ -101,7 +103,7 @@ setCsvListeners();
 updateInputFields(data);
 
 loadStaticImages().then(() => {
-    randomize();
+    randomize(data);
     renderImage(visibleCanvas, data);
     initFS(1024*1024*1024 /*1024MB = 1GB*/).then(() => displaySavedCards());
 });
@@ -172,15 +174,17 @@ function massGenerate(){
     var heightCards = (210 - 3 * margin) / 2;
     var widthCards = visibleCanvas.width / visibleCanvas.height * heightCards;
     var nbCardsRow = 4; // Math.floor((297 - 2 * margin) / (widthCards + margin));
-    console.log(nbCardsRow);
 
     var images = [];
     for(var i=0;i<csvData.length;i++){
-        retrieveCsvImage(csvData[i]);
+        if(typeof csvData[i].image == "string")
+            retrieveCsvImage(csvData[i]);
         csvData[i].whiteText = csvWhiteText;
         csvData[i].textShadow = csvTextShadow;
+        csvData[i].logoStroke = csvLogoStroke;
+        csvData[i].whiteBorder = csvWhiteBorder;
         for(var j=0;j<csvData[i].nbCopies;j++){
-            randomize();
+            randomize(csvData[i]);
 
             var newCanvas = document.createElement('canvas');
             renderImage(newCanvas, csvData[i]);
@@ -258,6 +262,8 @@ function setCsvListeners(){
     setCsvImagesListeners();
     setCsvWhiteTextListener();
     setCsvTextShadowListener();
+    setCsvLogoStrokeListener();
+    setCsvWhiteBorderListener();
 }
 
 function setCsvFileListner(){
@@ -318,6 +324,18 @@ function setCsvWhiteTextListener(){
 function setCsvTextShadowListener(){
     document.getElementById('csvTextShadow').addEventListener('change', function() {
         csvTextShadow = document.getElementById('csvTextShadow').checked;
+    })
+}
+
+function setCsvLogoStrokeListener(){
+    document.getElementById('csvLogoStroke').addEventListener('change', function() {
+        csvLogoStroke = document.getElementById('csvLogoStroke').checked;
+    })
+}
+
+function setCsvWhiteBorderListener(){
+    document.getElementById('csvWhiteBorder').addEventListener('change', function() {
+        csvWhiteBorder = document.getElementById('csvWhiteBorder').checked;
     })
 }
 
@@ -604,7 +622,7 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight, textAlign) {
     ctx.fillText(line, x, y);
 }
 
-function randomize(){
+function randomize(data){
     var pos = [];
     for(var i=0;i<6;i++)
         pos.push(i);
@@ -613,7 +631,7 @@ function randomize(){
 }
 
 function randomizeButton(){
-    randomize();
+    randomize(data);
     renderImage(visibleCanvas, data);
 }
 
