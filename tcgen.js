@@ -56,6 +56,7 @@ var csvWhiteText;
 var csvTextShadow;
 var csvLogoStroke;
 var csvWhiteBorder;
+var csvVerso;
 
 var isOpera;
 var isFirefox;
@@ -174,6 +175,7 @@ function massGenerate(){
     var heightCards = (210 - 3 * margin) / 2;
     var widthCards = visibleCanvas.width / visibleCanvas.height * heightCards;
     var nbCardsRow = 4; // Math.floor((297 - 2 * margin) / (widthCards + margin));
+    var nbCardsPage = nbCardsRow * 2;
 
     var images = [];
     for(var i=0;i<csvData.length;i++){
@@ -186,22 +188,48 @@ function massGenerate(){
         for(var j=0;j<csvData[i].nbCopies;j++){
             randomize(csvData[i]);
 
-            var newCanvas = document.createElement('canvas');
-            renderImage(newCanvas, csvData[i]);
+            var tempCanvas = document.createElement('canvas');
+            renderImage(tempCanvas, csvData[i]);
 
-            var image = newCanvas.toDataURL("image/png");
+            var image = tempCanvas.toDataURL("image/png");
             images.push(image);
         }
     }
+
+    var verso;
+    if(csvVerso)
+        verso = imageToCanvas(csvVerso).toDataURL("image/png");
     
+    var nbPages = Math.ceil(images.length / nbCardsPage) * (verso ? 2 : 1);
+    var lateralMargin = (297 - nbCardsRow * widthCards - (nbCardsRow - 1) * margin) / 2;
+
     var doc = new jsPDF('landscape');
-    for(var i=0;i<images.length;i++){
-        if(i != 0 && i % (nbCardsRow * 2) == 0) {
-            doc.addPage()
+    var cardIdx = 0;
+    var versoIdx = 0;
+    for(var idxPage=0;idxPage<nbPages;idxPage++){
+    //for(var i=0;i<images.length * (verso ? 2 : 1);i++){
+        for(var rowIdx=0;rowIdx<2;rowIdx++){
+            for(var columnIdx=0;columnIdx<nbCardsRow;columnIdx++){
+                var xCard;
+                var yCard = margin + (margin + heightCards) * rowIdx;
+
+                if(verso && idxPage % 2 == 1){
+                    if(versoIdx < images.length) {
+                        xCard = lateralMargin + (margin + widthCards) * (nbCardsRow - columnIdx - 1);
+                        doc.addImage(verso, 'PNG', xCard, yCard, widthCards, heightCards);
+                        versoIdx++;
+                    }
+                } else {
+                    if(cardIdx < images.length) {
+                        xCard = lateralMargin + (margin + widthCards) * columnIdx;
+                        doc.addImage(images[cardIdx], 'PNG', xCard, yCard, widthCards, heightCards);
+                        cardIdx++;
+                    }
+                }
+            }
         }
-        var xCard = (297 - nbCardsRow * widthCards - (nbCardsRow - 1) * margin) / 2 + (margin + widthCards) * (i % nbCardsRow);
-        var yCard = (margin + (margin + heightCards) * Math.floor(i / nbCardsRow)) % (2 * (margin + heightCards));
-        doc.addImage(images[i], 'PNG', xCard, yCard, widthCards, heightCards);
+        if(idxPage < nbPages - 1)
+            doc.addPage()
     }
     doc.save('a4.pdf');
 }
@@ -264,6 +292,7 @@ function setCsvListeners(){
     setCsvTextShadowListener();
     setCsvLogoStrokeListener();
     setCsvWhiteBorderListener();
+    setCsvVersoListener();
 }
 
 function setCsvFileListner(){
@@ -283,6 +312,16 @@ function setCsvBackgroundListener(){
         var img = new Image;
         img.onload = function() {
             csvBackground = img;
+        }
+        img.src = URL.createObjectURL(e.target.files[0]);
+    });
+}
+
+function setCsvVersoListener(){
+    document.getElementById("csvVerso").addEventListener('change', function(e) {
+        var img = new Image;
+        img.onload = function() {
+            csvVerso = img;
         }
         img.src = URL.createObjectURL(e.target.files[0]);
     });
@@ -456,7 +495,7 @@ function getImageFromFileSystem(name){
     });
 }
 
-function toBase64(img, width, height) {
+function imageToCanvas(img, width, height){
     var newCanvas = document.createElement('canvas'),
         ctx = newCanvas.getContext('2d');
 
@@ -465,7 +504,11 @@ function toBase64(img, width, height) {
 
     ctx.drawImage(img, 0, 0, newCanvas.width, newCanvas.height);
 
-    return newCanvas.toDataURL().replace(/^data:image\/(png|jpg);base64,/, "");
+    return newCanvas;
+}
+
+function toBase64(img, width, height) {
+    return imageToCanvas(img, width, height).toDataURL().replace(/^data:image\/(png|jpg);base64,/, "");
 }
 
 function load(id){
@@ -852,4 +895,3 @@ function renderImage(canvas, data){
 
     drawLogo(ctx, data);
 }
-
