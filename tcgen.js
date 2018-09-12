@@ -612,7 +612,7 @@ function randomizeButton(){
     renderImage(visibleCanvas, data);
 }
 
-function makeCombatMarks(ctx){
+function drawCombatMarks(ctx, data){
     var colors = ['#00aeef', '#fff200', '#ed1c24', '#fff', '#8dc63f', '#f7941d'];
     
     var margin = 13;
@@ -644,23 +644,26 @@ function shuffle(a) {
     return a;
 }
 
-function drawStars(ctx, rarity){
+function drawStars(ctx, data){
     var starsX = 96;
     var starsFirstY = 377;
     var starsSpacing = 54;
 
+    var rarity = data.rarity ? data.rarity : 1;
+
     for(var i=0;i<5;i++){
-        ctx.fillStyle = i < rarity ? '#ffd91c' : '#888';
-        drawStar(ctx, starsX, starsFirstY - i * starsSpacing);
+        drawStar(ctx, starsX, starsFirstY - i * starsSpacing, i < rarity ? '#ffd91c' : '#888');
     }
 }
 
-function drawStar(ctx, cx, cy){
-    //var cx = 96, cy = 162;
+function drawStar(ctx, cx, cy, color){
     var rOut = 21;
     var rMid = 19;
     var rMin = 10;
     var theta_step = 2 * Math.PI / 10;
+
+    ctx.fillStyle = color;
+
     ctx.beginPath();
     ctx.arc(cx, cy, rOut, 0, Math.PI * 2, true);
     ctx.moveTo(cx, cy - rMid);
@@ -695,39 +698,21 @@ function displayCheckedPattern(ctx, x, y, size, nbX, nbY){
     }
 }
 
-function renderImage(canvas, data){
-    var ctx = canvas.getContext('2d');
-
-    canvas.width = templateWhite.width;
-    canvas.height = templateWhite.height;
-    canvas.style.width  = canvas.width/2;
-    canvas.style.height = canvas.height/2;
-
-    if(data.background)
-        ctx.drawImage(data.background, 0, 0, canvas.width, canvas.height);
-    else{
-        var sizeCell = 42;
-        displayCheckedPattern(ctx, 0, 0, sizeCell, canvas.width / sizeCell, canvas.height / sizeCell);
-    }
-
-    if(data.image)
-        ctx.drawImage(data.image, 137, 131, 435, 277);
-    
-    ctx.drawImage(data.whiteBorder ? templateWhite : templateBlack, 0, 0);
-    ctx.fillStyle = '#000';
-    ctx.textAlign = "center";
-    ctx.textBaseline="middle"; 
-    
+function drawHeader(ctx, data){
     if(data.whiteBorder)
         ctx.fillStyle = '#000';
     else
         ctx.fillStyle = '#fff';
+    ctx.textAlign = "center";
+    ctx.textBaseline="middle"; 
     ctx.font = 'bold 35px sans-serif';
     ctx.fillText(data.name ? data.name : "", 275, 70);
     
     ctx.font = 'bold 24px sans-serif';
     ctx.fillText(data.nickname ? 'dit «' + data.nickname + '»' : "", 275, 102);
+}
 
+function drawQuote(ctx, data){
     if(data.whiteText)
         ctx.fillStyle = '#fff';
     else
@@ -737,9 +722,11 @@ function renderImage(canvas, data){
         ctx.shadowColor = "black";
     }
     ctx.font = 'bold 24px sans-serif';
-    wrapText(ctx, data.quote ? '«' + data.quote + '»' : "", canvas.width / 2, 720, canvas.width - 100, 22, 'center');
+    wrapText(ctx, data.quote ? '«' + data.quote + '»' : "", ctx.canvas.width / 2, 720, ctx.canvas.width - 100, 22, 'center');
     ctx.shadowBlur = 0;
-    
+}
+
+function drawSkills(ctx, data){
     var xFirstColumnSkills = 81;
     var xSecondColumnSkills = 349;
     var yFirstRowSkills = 475;
@@ -748,13 +735,20 @@ function renderImage(canvas, data){
     var offsetX = 45;
     var offsetY = 0;
     var offsetYmultiline = -12;
+
+    var maxWidthLabelSkill = 186;
+    var curLabelSkillFontSize = 30;
+    var minLabelSkillFontSize = 24;
     
     for(var i=0;i<6;i++){
         ctx.fillStyle = "#000";
         ctx.globalAlpha = 0.5;
         ctx.textAlign="center"; 
         ctx.font = 'bold 40px sans-serif';
-        ctx.fillText(data.valuesSkills[i] || data.valuesSkills[i] == 0 ? data.valuesSkills[i] : "", i < 3 ? xFirstColumnSkills : xSecondColumnSkills, yFirstRowSkills + rowSpacingSkills * (i % 3));
+
+        var xValueSkill = i < 3 ? xFirstColumnSkills : xSecondColumnSkills;
+        var yValueSkill = yFirstRowSkills + rowSpacingSkills * (i % 3);
+        ctx.fillText(data.valuesSkills[i] || data.valuesSkills[i] == 0 ? data.valuesSkills[i] : "", xValueSkill, yValueSkill);
         ctx.globalAlpha = 1;
 
         if(data.whiteText)
@@ -766,9 +760,7 @@ function renderImage(canvas, data){
             ctx.shadowColor = "black";
         }
         ctx.textAlign="left";
-        var maxWidthLabelSkill = 186;
-        var curLabelSkillFontSize = 30;
-        var minLabelSkillFontSize = 24;
+
         ctx.font = 'bold '+curLabelSkillFontSize+'px sans-serif';
 
         while(minLabelSkillFontSize < curLabelSkillFontSize && ctx.measureText(data.labelsSkills[i]).width >= maxWidthLabelSkill){
@@ -782,10 +774,9 @@ function renderImage(canvas, data){
         }
         ctx.shadowBlur = 0;
     }
+}
 
-    makeCombatMarks(ctx);
-    drawStars(ctx, data.rarity ? data.rarity : 1);
-
+function drawLogo(ctx, data){
     if(data.logo){
         var logo = data.logo;
 
@@ -805,5 +796,36 @@ function renderImage(canvas, data){
         
         ctx.drawImage(logo, 502, 48, 70, 70);
     }
+}
+
+function renderImage(canvas, data){
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = templateWhite.width;
+    canvas.height = templateWhite.height;
+    canvas.style.width  = canvas.width/2;
+    canvas.style.height = canvas.height/2;
+
+    if(data.background)
+        ctx.drawImage(data.background, 0, 0, canvas.width, canvas.height);
+    else{
+        var sizeCell = 42;
+        displayCheckedPattern(ctx, 0, 0, sizeCell, canvas.width / sizeCell, canvas.height / sizeCell);
+    }
+
+    if(data.image)
+        ctx.drawImage(data.image, 137, 131, 435, 277);
+    
+    ctx.drawImage(data.whiteBorder ? templateWhite : templateBlack, 0, 0);
+
+    drawHeader(ctx, data);
+    drawQuote(ctx, data);
+    
+    drawSkills(ctx, data)
+
+    drawCombatMarks(ctx, data);
+    drawStars(ctx, data);
+
+    drawLogo(ctx, data);
 }
 
