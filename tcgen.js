@@ -179,8 +179,7 @@ function massGenerate(){
 
     var images = [];
     for(var i=0;i<csvData.length;i++){
-        if(typeof csvData[i].image == "string")
-            retrieveCsvImage(csvData[i]);
+        retrieveCsvImage(csvData[i]);
         csvData[i].whiteText = csvWhiteText;
         csvData[i].textShadow = csvTextShadow;
         csvData[i].logoStroke = csvLogoStroke;
@@ -207,7 +206,6 @@ function massGenerate(){
     var cardIdx = 0;
     var versoIdx = 0;
     for(var idxPage=0;idxPage<nbPages;idxPage++){
-    //for(var i=0;i<images.length * (verso ? 2 : 1);i++){
         for(var rowIdx=0;rowIdx<2;rowIdx++){
             for(var columnIdx=0;columnIdx<nbCardsRow;columnIdx++){
                 var xCard;
@@ -218,12 +216,20 @@ function massGenerate(){
                         xCard = lateralMargin + (margin + widthCards) * (nbCardsRow - columnIdx - 1);
                         doc.addImage(verso, 'PNG', xCard, yCard, widthCards, heightCards);
                         versoIdx++;
+
+                        doc.setLineWidth(0.1);
+                        doc.setDrawColor(180, 180, 180);
+                        doc.rect(xCard, yCard, widthCards, heightCards);
                     }
                 } else {
                     if(cardIdx < images.length) {
                         xCard = lateralMargin + (margin + widthCards) * columnIdx;
                         doc.addImage(images[cardIdx], 'PNG', xCard, yCard, widthCards, heightCards);
                         cardIdx++;
+
+                        doc.setLineWidth(0.1);
+                        doc.setDrawColor(180, 180, 180);
+                        doc.rect(xCard, yCard, widthCards, heightCards);
                     }
                 }
             }
@@ -379,7 +385,8 @@ function setCsvWhiteBorderListener(){
 }
 
 function retrieveCsvImage(curData){
-    curData.image = csvImages[curData.image];
+    if(csvImages && csvImages.hasOwnProperty(curData.imageName))
+        curData.image = csvImages[curData.imageName];
     curData.background = csvBackground;
     curData.logo = csvLogo;
 }
